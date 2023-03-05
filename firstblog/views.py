@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm
 from .form import UserForm
-from .models import BlogPost
+from .models import Blog
 
 # def home(request):
 #     form = UserForm()
@@ -19,7 +19,7 @@ from .models import BlogPost
 
 
 def home(request):
-    posts = BlogPost.objects.all()
+    posts = Blog.objects.all()
     context = {'posts': posts}
     return render(request, 'main/index.html', context)
 
