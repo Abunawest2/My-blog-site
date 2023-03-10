@@ -1,0 +1,32 @@
+
+.divform{
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+form{
+    margin: 20px;
+    width: 25vw;
+    background-color: lightgrey;
+    box-sizing: border-box;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+}
+form h3{
+    line-height: 30px;
+    margin-top: 15px;
+}
+form div{
+    line-height: 25px;
+    margin: 15px 15px 0 15px;
+}
+.idiv{
+    margin: auto;
+}
+
+button{
+    margin: 15px 0;
+}
