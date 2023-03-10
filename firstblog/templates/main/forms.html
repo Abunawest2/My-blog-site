@@ -1,0 +1,40 @@
+{% extends "main/base.html" %}
+<!-- {% load static %} -->
+{% block title %}
+register
+{% endblock title %}
+{% block content %}
+    <div class="divform">
+        <form action="" method='POST' class="bg-light">
+            <h3 class="text-center">Register With Us</h3>
+            {% csrf_token %}
+            <div class="div">
+                <label for="username" class="label"> {{form.username.label}} </label>
+                {{form.username}}
+            </div>
+            <div class="div">
+                <label for="email" class="label"> {{form.email.label}}</label>
+                {{form.email}}
+            </div>
+            <div class="div">
+                <label for="email" class="label">Password</label>
+                {{form.password1}}
+            </div>
+            <div class="div">
+                <label for="email" class="label">Confirm Password</label>
+                {{form.password2}}
+            </div>
+            {% for error in fields.error %}
+              <p>{{error}}</p>
+            {% endfor %}
+            {% for message in messages %}
+            <div class="ui error message">
+                {{ message }}
+            </div>
+            {% endfor %}
+            <div class="div idiv">
+                <button type="submit" class="btn btn-primary">register</button>
+            </div>
+        </form>
+    </div>
+{% endblock content %}
