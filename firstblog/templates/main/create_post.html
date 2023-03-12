@@ -1,0 +1,35 @@
+{% extends "main/base.html" %}
+<!-- {% load static %} -->
+
+{% block title %}
+Create Post
+{% endblock title %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/create_post.css' %}">
+{% endblock css %}
+
+{% block content %}
+<form method="POST" enctype="multipart/form-data" class="bg-light">
+    {% csrf_token %}
+    <div>
+        <label for="{{ form.title.id_for_label }}">Title:</label>
+        {{ form.title }}
+    </div>
+    <!-- <div>
+        <label for="{{ form.author.id_for_label }}">Author: {{ author }}</label>
+        {{ form.author }}
+    </div> -->
+    <div>
+        <label for="{{ form.add_image.id_for_label }}">Image:</label>
+        {{ form.add_image }}
+    </div>
+    <div>
+        <label for="{{ form.post.id_for_label }}">Post:</label>
+        {{ form.post }}
+    </div>
+    <div class="container text-center">
+        <button type="submit">Post</button>
+    </div>
+</form>
+
+{% endblock content %}
