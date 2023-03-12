@@ -6,7 +6,6 @@ Home page
 {% endblock title %}
 
 {% block content %}
-<h1 class="text-center h2">Home</h1>
 <main class="container">
     <div class="row">
         <div class="col-3 bg-light p-4 cons" id="side-div">
@@ -21,7 +20,7 @@ Home page
                     <h3 class="h2 p-4">{{post.title}}</h3>
                 </div>
                 <div class="container text-muted">
-                    <small class="p-4">By: {{post.author|upper}}, {{post.date_created|date:"d F, Y"}}</small><br>
+                    <small class="p-4">By: {{post.author.username|upper}}, {{post.date_created|date:"d F, Y"}}</small><br>
                     <small class="p-4">Updated: {{post.date_updated|date:"d F, Y"}}</small>
                 </div>
                 <div class="container text-center">
@@ -33,7 +32,7 @@ Home page
             </div>
                 
             {% else %}
-            <div class="container cons">
+            <div class="container bg-light cons">
                 <div class="container">
                     <h3 class="h2 p-4">{{post.title}}</h3>
                 </div>

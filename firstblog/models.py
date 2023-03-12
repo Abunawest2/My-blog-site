@@ -2,6 +2,16 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, User, AbstractBaseUser
 from multiselectfield import MultiSelectField
 
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True, verbose_name='email address')
+    contact = models.CharField(max_length=20)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
+    def __str__(self):
+        return self.username
+
 class Topic(models.Model):
     name = models.CharField(max_length=100)
 
@@ -9,7 +19,7 @@ class Topic(models.Model):
         return self.name
 
 class BlogPost(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     topic = models.ManyToManyField(Topic, blank=True)
     title = models.CharField(max_length=100)
     add_image = models.ImageField(null=True, blank=True, upload_to='image/')
@@ -19,6 +29,3 @@ class BlogPost(models.Model):
 
     def __str__(self):
         return self.title
-
-# class CustomerUser(AbstractBaseUser):
-#     pass

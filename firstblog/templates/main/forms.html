@@ -5,36 +5,47 @@ register
 {% endblock title %}
 {% block content %}
     <div class="divform">
-        <form action="" method='POST' class="bg-light">
-            <h3 class="text-center">Register With Us</h3>
+        <form action="" method='POST' class="bg-light form1">
+            <h3 class="text-center">Register To Write Yours</h3>
+            <!-- <div class="div container">
+                <h3 class="text-center">Register To Write Yours</h3>
+            </div> -->
             {% csrf_token %}
             <div class="div">
                 <label for="username" class="label"> {{form.username.label}} </label>
                 {{form.username}}
+                {% for error in username_errors %}
+                <p class="error-message text-muted">{{error}}</p>
+                {% endfor %}
             </div>
             <div class="div">
                 <label for="email" class="label"> {{form.email.label}}</label>
                 {{form.email}}
+                {% for error in email_errors %}
+                <p class="error-message text-muted">{{error}}</p>
+                {% endfor %}
             </div>
             <div class="div">
                 <label for="email" class="label">Password</label>
                 {{form.password1}}
+                {% for error in password1_errors %}
+                <p class="error-message text-muted">{{error}}</p>
+                {% endfor %}
             </div>
             <div class="div">
                 <label for="email" class="label">Confirm Password</label>
                 {{form.password2}}
-            </div>
-            {% for error in fields.error %}
-            <p>{{error}}</p>
-            {% endfor %}
-            {% for message in messages %}
-            <div class="ui error message">
-                {{ message }}
-            </div>
-            {% endfor %}
-            <div class="div idiv">
+                {% for error in password2_errors %}
+                <p class="error-message text-muted">{{error}}</p>
+                {% endfor %}
+            </div>            
+            <div class="text-center">
                 <button type="submit" class="btn btn-primary">register</button>
             </div>
+            <p class="text-center p-text">Have an account? Login <a href="{% url 'login' %}" class="Login">Here</a></p>
+            <!-- <div class="idiv">
+                <p class="text-center">Have an account? Login <a href="{% url 'login' %}" class="Login">Here</a></p>
+            </div> -->
         </form>
     </div>
 {% endblock content %}

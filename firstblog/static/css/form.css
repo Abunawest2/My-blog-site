@@ -1,32 +1,66 @@
 
 .divform{
+    min-height: 86vh;;
+    overflow: hidden;
     font-weight: bold;
+    font-family: Georgia, 'Times New Roman', Times, serif;
     display: flex;
     align-items: center;
     justify-content: center;
+    
 }
-
-form{
-    margin: 20px;
-    width: 25vw;
+#loginform{
+    min-height: 80vh;
+}
+form {
+    max-width: 30%;
     background-color: lightgrey;
     box-sizing: border-box;
     border-radius: 20px;
     display: flex;
     flex-direction: column;
+    padding: 15px;
+    overflow: hidden;
+  }  
+
+h3{
+    line-height: 10px;
+    padding: 10px 0;
 }
-form h3{
-    line-height: 30px;
-    margin-top: 15px;
+.div > label{
+    padding-bottom: 10px;
+}
+.divlog > label{
+    padding-bottom: 10px;
 }
 form div{
-    line-height: 25px;
     margin: 15px 15px 0 15px;
 }
-.idiv{
-    margin: auto;
+.p-text{
+    margin: 10px 0 5px 0;
+}
+.Login{
+    color: dodgerblue;
 }
 
-button{
-    margin: 15px 0;
+.Login:hover{
+    color: blue;
 }
+
+@media screen and (max-width: 768px) {
+    .divform {
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(16, minmax(50px, auto));
+    }
+    
+    form {
+        max-width: 80%;
+        height: auto;
+      }
+      a{
+        font-size: 12px;
+      }
+    .Login{
+        font-size: 20px;
+    }
+  }
