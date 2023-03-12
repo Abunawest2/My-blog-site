@@ -6,7 +6,6 @@ from .form import UserForm
 from .models import BlogPost
 
 def signup(request):
-    form = UserForm()
     if request.method == "POST":
         form = UserForm(request.POST)
         if form.is_valid():
