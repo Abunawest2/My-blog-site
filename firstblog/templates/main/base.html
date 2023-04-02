@@ -8,36 +8,39 @@
     <title>{% block title %} {% endblock title %}</title>
     <link rel="stylesheet" href="{% static 'css/nav.css' %}">
     <link rel="stylesheet" href="{% static 'css/form.css' %}">
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     {% block css %}
-      
     {% endblock css %}
 </head>
-<body>
-    {% if user.is_authenticated %}   
+<body class="body" style='background-color:lavender'>
+    {% if user.is_authenticated %}
     <header>
         <nav>
             <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="">Category 1</a></li>
-                <li><a href="">Category 2</a></li>
-                <li><a href="{% url 'create_post' %}">Create Post</a></li>
-                <li><a href="{% url 'login' %}">Log Out</a></li>
+                <li><a href="{% url 'home' %}" class='link'>Home</a></li>
+                <li><a href="" class='link'>Category 1</a></li>
+                <li><a href="" class='link'>Category 2</a></li>
+                <li><a href="{% url 'create_post' %}" class='link'>Create Post</a></li>
+                <li><a href="" class='link'>Profile</a></li>
+                <li><a href="{% url 'logout' %}" class='link'>Log Out</a></li>
             </ul>
         </nav>
     </header>
-    {% else %}
+{% else %}
     <header>
         <nav>
             <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="">Category 1</a></li>
-                <li><a href="">Category 2</a></li>
-                <li><a href="{% url 'login' %}">Log In</a></li>
-                <li><a href="{% url 'signup' %}">Register</a></li>
+                <li><a href="{% url 'home' %}" class='link'>Home</a></li>
+                <li><a href="" class='link'>Category 1</a></li>
+                <li><a href="" class='link'>Category 2</a></li>
+                <li><a href="{% url 'login' %}" class='link'>Log In</a></li>
+                <li><a href="{% url 'signup' %}" class='link'>Register</a></li>
             </ul>
         </nav>
     </header>
-    {% endif %}
+{% endif %}
+
     {% block content %}
     
     {% endblock content %}

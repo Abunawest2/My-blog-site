@@ -1,0 +1,18 @@
+{% extends "main/base.html" %}
+
+{% block title %}
+Delete Post
+{% endblock title %}
+
+{% block content %}
+    <div class="bg-light rounded container d-flex-column justify-content-center-between">
+        <div class="container mt-4">
+            <p class="text-center p-4 fs-4 fw-medium">Are you sure you want to delete "{{ post.title }}"?</p>
+        </div>
+        <form method="post" class="container bg-light">
+            {% csrf_token %}
+            <input type="submit" value="Delete" class="bt btn-danger fs-5">
+            <a href="{% url 'home' %}" class="link text-primary text-center fs-5 fw-medium">Cancel</a>
+        </form>
+    </div>
+{% endblock content %}

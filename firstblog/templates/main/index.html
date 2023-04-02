@@ -6,47 +6,5 @@ Home page
 {% endblock title %}
 
 {% block content %}
-<main class="container">
-    <div class="row">
-        <div class="col-3 bg-light p-4 cons" id="side-div">
-            <h3>category</h3>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aspernatur id itaque beatae doloremque necessitatibus cumque exercitationem minima? Error voluptatem dicta dolor harum blanditiis perspiciatis voluptas enim, beatae atque rem laudantium tempora magni quaerat, laborum ex non maiores ab maxime dolore illo? Cum minus aspernatur nulla nisi id dolores necessitatibus unde odio perferendis? Illum modi, reiciendis voluptate harum fuga quasi mollitia ullam vitae distinctio eius voluptatibus adipisci recusandae praesentium nobis sequi voluptatem eaque qui pariatur neque officia fugit commodi blanditiis quibusdam? Dicta eos id veniam? Enim nemo, repellendus corporis ipsa mollitia quidem dignissimos expedita deserunt aliquam odio dolore minus. Vero magnam incidunt blanditiis exercitationem soluta, distinctio maiores nihil fugit voluptatibus harum inventore temporibus aperiam saepe dolorem? Minus voluptate soluta alias! Quidem expedita consectetur nam illum dolorum voluptatem saepe vitae optio sapiente sequi, officia doloremque consequatur accusamus beatae tempora eaque molestias modi placeat quo quia corporis debitis. Molestias unde rem voluptates labore ab eum rerum ipsam recusandae vel perspiciatis doloribus magnam, tenetur quis excepturi sapiente eius esse quidem? Neque minima voluptas atque modi. Inventore, ad maiores! Ipsa adipisci ipsum nesciunt fugit at deleniti excepturi maiores molestias, pariatur, culpa mollitia optio? Quam corrupti sed expedita facere labore hic impedit nobis, quidem soluta provident.</p>
-        </div>
-        <div class="col rounded-6" id="div">
-        {% for post in posts %}
-            {% if post.add_image %}
-            <div class="container bg-light cons">
-                <div class="container">
-                    <h3 class="h2 p-4">{{post.title}}</h3>
-                </div>
-                <div class="container text-muted">
-                    <small class="p-4">By: {{post.author.username|upper}}, {{post.date_created|date:"d F, Y"}}</small><br>
-                    <small class="p-4">Updated: {{post.date_updated|date:"d F, Y"}}</small>
-                </div>
-                <div class="container text-center">
-                    <img src="{{post.add_image.url}}" class="img-fluid rounded" alt="" width="40%">
-                </div>
-                <div class="container-sm">
-                    <p class="p-4">{{post.post}}</p>
-                </div>
-            </div>
-                
-            {% else %}
-            <div class="container bg-light cons">
-                <div class="container">
-                    <h3 class="h2 p-4">{{post.title}}</h3>
-                </div>
-                <div class="container text-muted">
-                    <small class="p-4">By: {{post.author|upper}}, {{post.date_created|date:"d F, Y"}}</small><br>
-                    <small class="p-4">Updated: {{post.date_updated|date:"d F, Y"}}</small>
-                </div>
-                <div class="container-sm">
-                    <p class="p-4">{{post.post}}</p>
-                </div>
-            </div>
-            {% endif %}
-        {% endfor %}
-        </div>
-    </div>
-</main>
+{% include 'main/post.html' %}
 {% endblock content %}

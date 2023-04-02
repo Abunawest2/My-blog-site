@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+from firstblog.password import validate_password_length
 import os
 from pathlib import Path
 
@@ -87,6 +87,23 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
+
+# settings.py
+# AUTH_PASSWORD_VALIDATORS = [
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+#         'OPTIONS': {
+#             'min_length': 8,
+#         }
+#     },
+#     {
+#         'NAME': 'path.to.custom.password_validators.CustomValidator',
+#         'OPTIONS': {
+#             'option1': 'value1',
+#             'option2': 'value2',
+#         }
+#     },
+# ]
 
 AUTH_PASSWORD_VALIDATORS = [
     {

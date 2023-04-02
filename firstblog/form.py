@@ -1,9 +1,8 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
-from .models import BlogPost, CustomUser
+from .models import BlogPost, CustomUser, Comment
 from django.core.validators import FileExtensionValidator
-
 
 class UserForm(UserCreationForm):
     username = forms.CharField(
@@ -13,7 +12,7 @@ class UserForm(UserCreationForm):
     )
     email = forms.CharField(
         widget=forms.TextInput(
-            attrs = {'class':'form-in form-control', 'placeholder':'Enter email'}
+            attrs = {'class':'form-in form-control', 'placeholder':'Enter Email'}
         )
     )
     password1 = forms.CharField(
@@ -51,4 +50,14 @@ class BlogPostForm(forms.ModelForm):
     )
     class Meta:
         model = BlogPost
-        fields = ['topic', 'title', 'add_image', 'post']
+        fields = ['title', 'add_image', 'post']
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ('text',)
+        labels = {'text': 'Comment'}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['text'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter your comment here'})
