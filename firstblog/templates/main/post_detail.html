@@ -1,0 +1,363 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} - Blog{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/post_comments.css' %}">
+<link rel="stylesheet" href="{% static 'css/post_detail.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="post-detail-container">
+  <!-- Back Link -->
+  <a href="{% url 'home' %}" class="back-link">
+    <i class="fas fa-arrow-left"></i>
+    Back to all posts
+  </a>
+
+  <!-- Post Header -->
+  <div class="post-header">
+    <h1 class="post-title">{{ post.title }}</h1>
+    <div class="post-meta">
+      <div class="post-meta-item">
+        <i class="fas fa-user"></i>
+        <span>By
+          <a href="{% url 'author_profile' post.author.username %}" class="author-link">
+            {{ post.author.username}}</a>
+        </span>
+      </div>
+      <div class="post-meta-item">
+        <i class="fas fa-calendar"></i>
+        <span>{{ post.date_created|date:"F d, Y" }}</span>
+      </div>
+      <div class="post-meta-item">
+        <i class="fas fa-comment"></i>
+        <span>{{ post.get_comment_count }} comment{{ post.get_comment_count|pluralize }}</span>
+      </div>
+      {% if post.date_updated != post.date_created %}
+      <div class="post-meta-item">
+        <i class="fas fa-edit"></i>
+        <span>Updated {{ post.date_updated|date:"F d, Y" }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Post Actions (Edit/Delete for staff) -->
+  {% if user.is_authenticated and user.is_staff %}
+  <div class="post-actions">
+    <a href="{% url 'update_post' post.pk %}" class="action-btn">
+      <i class="fas fa-edit"></i>
+      Edit Post
+    </a>
+    <a href="{% url 'delete_post' post.pk %}" class="action-btn danger">
+      <i class="fas fa-trash"></i>
+      Delete Post
+    </a>
+  </div>
+  {% endif %}
+
+  <div class="post-content">
+    <!-- Post Image -->
+    {% if post.add_image %}
+    <img src="{{ post.add_image.url }}" alt="{{ post.title }}" class="post-image">
+    {% endif %}
+  
+    <!-- Post Content -->
+    <div class="tinymce-content">
+      {{ post.post|safe }}
+    </div>
+
+    <div class="card-footer bg-light">
+      <div class="px-5">
+        <div class="d-flex justify-content-between align-items-center p-3">
+          <button class="btn btn-sm btn-outline-primary comment-toggle-btn" data-post-id="{{ post.pk }}">
+            <i class="fas fa-comment"></i>
+            Comments
+            <span class="badge bg-primary ms-1">{{ post.get_comment_count }}</span>
+          </button>
+          <!-- Like Post -->
+          <button class="comment-action-btn post-like-btn {% if liked_by_user %} liked {% endif %}" data-post-id="{{ post.pk }}">
+              <i class="far {% if liked_by_user %} fas {% endif %} fa-heart"></i>
+              <span class="like-count">{{ post.likes_count|default:0 }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Comment Form -->
+    {% if user.is_authenticated %}
+    <div class="comment-form mb-4">
+      <form method="POST" action="{% url 'add_comment_to_post' post.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <div class="comment-input-wrapper">
+          <div class="user-avatar">
+            {{ user.username|slice:":2"|upper }}
+          </div>
+          <div class="comment-input">
+            <textarea class="form-control" name="comment_text" rows="3" placeholder="What are your thoughts?"
+              required></textarea>
+            <div class="comment-actions">
+              <button type="submit" class="btn btn-sm btn-comment-primary btn-comment">
+                <i class="fas fa-paper-plane me-1"></i>
+                Comment
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i>
+      Please <a href="{% url 'login' %}?next={{ request.path }}" class="alert-link">login</a> to comment.
+    </div>
+    {% endif %}
+
+    <!-- Comments List -->
+    {% if comments %}
+    <div class="comments-list">
+      {% for comment in comments %}
+      <div class="comment-item">
+        <div class="comment-header">
+          <div class="user-avatar">
+            {{ comment.author.username|slice:":2"|upper }}
+          </div>
+          <div class="comment-author">
+            <div class="comment-author-name">{{ comment.author.get_full_name|default:comment.author.username }}</div>
+            <div class="comment-date">{{ comment.date_created|timesince }} ago</div>
+          </div>
+          {% if user == comment.author or user.is_staff %}
+          <div class="ms-auto">
+            <form method="POST" action="{% url 'delete_comment' comment.pk %}" style="display: inline;">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <button type="submit" class="btn btn-sm comment-delete-btn" onclick="return confirm('Are you sure?')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+        <div class="comment-content">
+          {{ comment.text }}
+        </div>
+        <div class="comment-footer">
+          <button class="comment-action-btn like-btn {% if liked_by_user %} liked {% endif %}" data-comment-id="{{ comment.pk }}">
+            <i class="far {% if liked_by_user %} fas {% endif %} fa-heart"></i>
+            <span class="like-count">{{ comment.likes_count|default:0 }}</span>
+          </button>
+          {% if user.is_authenticated %}
+          <button class="comment-action-btn reply-btn" data-comment-id="{{ comment.pk }}">
+            <i class="fas fa-reply"></i>
+            Reply
+          </button>
+          {% endif %}
+        </div>
+
+        <!-- Replies -->
+        {% if comment.replies.all %}
+        <div class="reply-section" style="display: block;">
+          {% for reply in comment.replies.all %}
+          <div class="reply-item">
+            <div class="comment-header">
+              <div class="user-avatar small">
+                {{ reply.author.username|slice:":2"|upper }}
+              </div>
+              <div class="comment-author">
+                <div class="comment-author-name">{{ reply.author.get_full_name|default:reply.author.username }}</div>
+                <div class="comment-date">{{ reply.date_created|timesince }} ago</div>
+              </div>
+              {% if user == reply.author or user.is_staff %}
+              <div class="ms-auto">
+                <form method="POST" action="{% url 'delete_comment' reply.pk %}" style="display: inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.path }}">
+                  <button type="submit" class="btn btn-sm comment-delete-btn" onclick="return confirm('Are you sure?')">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+              {% endif %}
+            </div>
+            <div class="comment-content small">
+              {{ reply.text }}
+            </div>
+            <div class="comment-footer small">
+              <button class="comment-action-btn like-btn" data-comment-id="{{ reply.pk }}">
+                <i class="far fa-heart"></i>
+                <span class="like-count">{{ reply.likes_count|default:0 }}</span>
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Reply Form -->
+        {% if user.is_authenticated %}
+        <div class="reply-section" style="display: none;" id="reply-section-{{ comment.pk }}">
+          <div class="reply-form">
+            <form method="POST" action="{% url 'add_reply_to_comment' comment.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <div class="comment-input-wrapper">
+                <div class="user-avatar small">
+                  {{ user.username|slice:":2"|upper }}
+                </div>
+                <div class="comment-input">
+                  <textarea class="form-control form-control-sm" name="reply_text" rows="2"
+                    placeholder="Write a reply..." required></textarea>
+                  <div class="comment-actions">
+                    <button type="button" class="btn btn-sm btn-light btn-comment cancel-reply">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-comment-primary btn-comment">Reply</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="comments-empty">
+      <i class="far fa-comments"></i>
+      <p class="mb-0">No comments yet. Be the first to share your thoughts!</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Related Posts -->
+  {% if related_posts %}
+  <div class="related-posts">
+    <h3><i class="fas fa-bookmark me-2"></i>More from {{ post.author.username }}</h3>
+    {% for related_post in related_posts %}
+    <div class="related-post-card">
+      <a href="{% url 'post_detail' related_post.pk %}">
+        {{ related_post.title }}
+      </a>
+      <div class="text-muted small mt-1">
+        <i class="fas fa-calendar me-1"></i>
+        {{ related_post.date_created|date:"M d, Y" }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Post_Likes button functionality (you'll need AJAX for this)
+    const postLikeBtns = document.querySelectorAll('.post-like-btn');
+    postLikeBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const postId = this.getAttribute('data-post-id');
+
+        // Make AJAX call to like endpoint
+        fetch(`/post/${postId}/like/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              this.classList.toggle('liked');
+              const icon = this.querySelector('i');
+              const countSpan = this.querySelector('.like-count');
+
+              if (this.classList.contains('liked')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+              } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+              }
+              countSpan.textContent = data.likes_count;
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      });
+    });
+
+    // Comment Like button functionality
+    const likeBtns = document.querySelectorAll('.like-btn');
+
+    likeBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const commentId = this.getAttribute('data-comment-id');
+
+        fetch(`/comment/${commentId}/like/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              this.classList.toggle('liked');
+              const icon = this.querySelector('i');
+              const countSpan = this.querySelector('.like-count');
+
+              if (this.classList.contains('liked')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+              } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+              }
+              countSpan.textContent = data.likes_count;
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      });
+    });
+
+    // Reply button functionality
+    const replyBtns = document.querySelectorAll('.reply-btn');
+
+    replyBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const commentId = this.getAttribute('data-comment-id');
+        const replySection = document.getElementById(`reply-section-${commentId}`);
+
+        document.querySelectorAll('.reply-section .reply-form').forEach(form => {
+          if (form.parentElement.id !== `reply-section-${commentId}`) {
+            form.parentElement.style.display = 'none';
+          }
+        });
+
+        if (replySection.style.display === 'none') {
+          replySection.style.display = 'block';
+          replySection.querySelector('textarea').focus();
+        } else {
+          replySection.style.display = 'none';
+        }
+      });
+    });
+
+    // Cancel reply button
+    const cancelReplyBtns = document.querySelectorAll('.cancel-reply');
+
+    cancelReplyBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const replyForm = this.closest('.reply-section');
+        replyForm.style.display = 'none';
+        replyForm.querySelector('textarea').value = '';
+      });
+    });
+  });
+</script>
+{% endblock %}

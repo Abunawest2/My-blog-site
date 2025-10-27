@@ -1,48 +1,212 @@
 {% extends "main/base.html" %}
-<!-- {% load static %} -->
+{% load static %}
 {% block title %}
-register
+Register - MyBlog
 {% endblock title %}
+
+{%block css %}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+
+{% endblock css %}
 {% block content %}
-    <div class="divform">
-        <form action="" method='POST' class="bg-light form1">
-            <h3 class="text-center">Register To Write Yours</h3>
-            {% csrf_token %}
-            <div class="div">
-                <label for="username" class="label"> {{form.username.label}} </label>
-                {{form.username}}
-                {% for error in username_errors %}
-                <p class="error-message text-muted">{{error}}</p>
-                {% endfor %}
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <!-- Registration Form -->
+                <form class="auth-form" method="POST" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Header -->
+                    <div class="auth-header">
+                        <div class="auth-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h2 class="auth-title">Join Our Community</h2>
+                        <p class="auth-subtitle">Create your account to start writing</p>
+                    </div>
+
+                    <!-- Social Login Section -->
+                    <div class="social-buttons mb-4">
+
+
+                        <!-- Username Field -->
+                        <div class="form-group">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user me-2"></i>{{ form.username.label }}
+                            </label>
+                            {{ form.username }}
+                            {% for error in username_errors %}
+                            <p class="error-message">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Email Field -->
+                        <div class="form-group">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>{{ form.email.label }}
+                            </label>
+                            {{ form.email }}
+                            {% for error in email_errors %}
+                            <p class="error-message">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="form-group">
+                            <label for="password1" class="form-label">
+                                <i class="fas fa-key me-2"></i>Password
+                            </label>
+                            {{ form.password1 }}
+                            {% for error in password1_errors %}
+                            <p class="error-message">{{ error }}</p>
+                            {% endfor %}
+                            <!-- Password Strength Indicator -->
+                            <div class="password-strength">
+                                <div class="strength-bar" id="password-strength-bar"></div>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="form-group">
+                            <label for="password2" class="form-label">
+                                <i class="fas fa-key me-2"></i>Confirm Password
+                            </label>
+                            {{ form.password2 }}
+                            {% for error in password2_errors %}
+                            <p class="error-message">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
+                                <label class="form-check-label text-muted small" for="terms">
+                                    I agree to the <a href="" class="text-primary">Terms of Service</a>
+                                    and <a href="" class="text-primary">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn-auth" id="submit-btn">
+                            <i class="fas fa-user-plus me-2"></i>Create Account
+                        </button>
+                        <!-- Social Login Buttons -->
+                        <div class="social-divider">
+                            <span>OR CONTINUE WITH</span>
+                        </div>
+                        <div class="s-btn">
+
+                            <a href="" class="social-btn social-google">
+                                <i class="fab fa-google me-2"></i>Google
+                            </a>
+                            <a href="" class="social-btn social-github">
+                                <i class="fab fa-github me-2"></i>GitHub
+                            </a>
+                        </div>
+
+                        <!-- Divider -->
+
+
+                        <!-- Login Link -->
+                        <div class="auth-link">
+                            Already have an account?
+                            <a href="{% url 'login' %}">Sign in here</a>
+                        </div>
+                </form>
             </div>
-            <div class="div">
-                <label for="email" class="label"> {{form.email.label}}</label>
-                {{form.email}}
-                {% for error in email_errors %}
-                <p class="error-message text-muted">{{error}}</p>
-                {% endfor %}
-            </div>
-            <div class="div">
-                <label for="email" class="label">Password</label>
-                {{form.password1}}
-                {% for error in password1_errors %}
-                <p class="error-message text-muted">{{error}}</p>
-                {% endfor %}
-            </div>
-            <div class="div">
-                <label for="email" class="label">Confirm Password</label>
-                {{form.password2}}
-                {% for error in password2_errors %}
-                <p class="error-message text-muted">{{error}}</p>
-                {% endfor %}
-            </div>            
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary">register</button>
-            </div>
-            <p class="text-center p-text">Have an account? Login <a href="{% url 'login' %}" class="Login link">Here</a></p>
-            <!-- <div class="idiv">
-                <p class="text-center">Have an account? Login <a href="{% url 'login' %}" class="Login">Here</a></p>
-            </div> -->
-        </form>
+        </div>
     </div>
+</div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add form-control class to all form inputs
+        const formInputs = document.querySelectorAll(
+            'input[type="text"], input[type="email"], input[type="password"]'
+        )
+        formInputs.forEach((input) => {
+            input.classList.add('form-control')
+        })
+
+        // Add loading state to form submission
+        const form = document.querySelector('form')
+        const submitBtn = document.getElementById('submit-btn')
+
+        if (form && submitBtn) {
+            form.addEventListener('submit', function (e) {
+                // Check if terms are accepted
+                const termsCheckbox = document.getElementById('terms')
+                if (!termsCheckbox.checked) {
+                    e.preventDefault()
+                    alert('Please accept the Terms of Service and Privacy Policy to continue.')
+                    return
+                }
+
+                submitBtn.innerHTML =
+                    '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...'
+                submitBtn.disabled = true
+                submitBtn.classList.add('loading')
+            })
+        }
+
+        // Auto-focus on username field
+        const usernameField = document.querySelector('input[type="text"]')
+        if (usernameField) {
+            usernameField.focus()
+        }
+
+        // Basic password strength indicator
+        const password1 = document.getElementById(
+            '{{ form.password1.id_for_label }}'
+        )
+        const strengthBar = document.getElementById('password-strength-bar')
+
+        if (password1 && strengthBar) {
+            password1.addEventListener('input', function () {
+                const password = this.value
+                let strength = 0
+
+                if (password.length >= 8) strength += 1
+                if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 1
+                if (password.match(/\d/)) strength += 1
+                if (password.match(/[^a-zA-Z\d]/)) strength += 1
+
+                strengthBar.className = 'strength-bar'
+                if (password.length === 0) {
+                    strengthBar.style.width = '0%'
+                } else if (strength <= 1) {
+                    strengthBar.classList.add('strength-weak')
+                } else if (strength <= 2) {
+                    strengthBar.classList.add('strength-medium')
+                } else {
+                    strengthBar.classList.add('strength-strong')
+                }
+            })
+        }
+
+        // Social login button loading states
+        const socialButtons = document.querySelectorAll('.social-btn')
+        socialButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const originalText = this.innerHTML
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Connecting...'
+                this.style.pointerEvents = 'none'
+
+                // Reset after 3 seconds if still on page
+                setTimeout(() => {
+                    this.innerHTML = originalText
+                    this.style.pointerEvents = 'auto'
+                }, 3000)
+            })
+        })
+    })
+</script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+{% endblock scripts %}

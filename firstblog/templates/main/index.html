@@ -5,6 +5,49 @@
 Home page
 {% endblock title %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/post_comments.css' %}">
+
+{% endblock css %}
+
 {% block content %}
-{% include 'main/post.html' %}
+<div class="row">
+  <div class="col-lg-3 col-md-4 mb-4">
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0 text-center">Categories</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          {% for category in categories %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <a href="?category={{ category.name }}" class="text-decoration-none text-dark">
+              {{ category.name }}
+            </a>
+            <span class="badge bg-primary rounded-pill">{{ category.post_count }}</span>
+          </li>
+          {% empty %}
+          <li class="list-group-item">No categories yet</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="card-footer text-muted">
+        <small>Browse by category</small>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header bg-light">
+        <h6 class="card-title mb-0">About</h6>
+      </div>
+      <div class="card-body">
+        <p class="card-text small">
+          Welcome to our blog! Discover amazing content across various categories.
+          Join our community and share your thoughts.
+        </p>
+      </div>
+    </div>
+  </div>
+  {% include 'main/post.html' %}
+</div>
 {% endblock content %}

@@ -1,8 +1,7 @@
-1. Set up a virtual environment
-2. Create the website project
-3. Create an app that has the users dashboard
-4. Making all the necessary project set up such as installing the app in the app list, setting up routing, creating the app template template folder and some simple template set up.
-5. Setting user registration.
-6. Constructing the app models
-7. Making all necessary views
-8. Authentication and authorization
+Django
+Pillow
+django-multiselectfield
+asgiref
+sqlparse,
+django-tinymce
+django-unfold

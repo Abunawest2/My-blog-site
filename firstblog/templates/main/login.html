@@ -1,33 +1,176 @@
 {% extends "main/base.html" %}
 {% load static %}
-{% block title %}Log in{% endblock title %}
+{% block title %}Log In - MyBlog{% endblock title %}
+
 {% block css %}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
 {% endblock css %}
+
 {% block content %}
-<div class="divform" id="loginform">
-    <form action="" method='POST' class="bg-light">
-        {% csrf_token %}
-        <div class="divlog">
-            <h3 class="text-center">Log In</h3>
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <!-- Login Form -->
+                <form class="auth-form" method="POST" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Header -->
+                    <div class="auth-header">
+                        <div class="auth-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h2 class="auth-title">Welcome Back</h2>
+                        <p class="auth-subtitle">Sign in to continue your journey</p>
+                    </div>
+
+                    <!-- Messages/Alerts -->
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <!-- Error Message -->
+                    {% if error_msg %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ error_msg }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope me-2"></i>Email Address
+                        </label>
+                        <input type="email" name="email" id="email" class="form-control" placeholder="your@email.com"
+                            required value="{{ request.POST.email|default:'' }}">
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-key me-2"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <input type="password" name="password" id="password" class="form-control"
+                                placeholder="Enter your password" required>
+                            <button type="button" class="btn" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Form Options -->
+                    <div class="form-options">
+                        <div class="remember-me">
+                            <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me">
+                            <label class="form-check-label text-muted" for="rememberMe">
+                                Keep me signed in
+                            </label>
+                        </div>
+                        <a href="#" class="forgot-password">
+                            <i class="fas fa-question-circle me-1"></i>Forgot password?
+                        </a>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-auth">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+
+                    <!-- Social Login Divider -->
+                    <div class="social-divider">
+                        <span>OR CONTINUE WITH</span>
+                    </div>
+
+                    <!-- Social Login -->
+                    <div class="social-buttons">
+                        <button type="button" class="social-btn social-google">
+                            <i class="fab fa-google me-2"></i>Google
+                        </button>
+                        <button type="button" class="social-btn social-github">
+                            <i class="fab fa-github me-2"></i>GitHub
+                        </button>
+                    </div>
+
+                    <!-- Sign Up Link -->
+                    <div class="auth-link">
+                        New to our platform?
+                        <a href="{% url 'signup' %}">Create an account</a>
+                    </div>
+                </form>
+
+                <!-- Demo Credentials -->
+                <div class="demo-card mt-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-rocket text-warning me-2 fa-lg"></i>
+                            <h6 class="card-title mb-0 text-dark fw-bold">Demo Access</h6>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <small class="text-dark fw-semibold d-block">👑 Staff Account</small>
+                                <small class="text-dark">Email: admin@blog.com</small><br>
+                                <small class="text-dark">Password: admin123</small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-dark fw-semibold d-block">👤 User Account</small>
+                                <small class="text-dark">Email: user@blog.com</small><br>
+                                <small class="text-dark">Password: user123</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="divlog">
-            <label for="email" class="label">Email</label>
-            <input type="email" name="email" id="email" class="form-control" placeholder="Email">
-        </div>
-        <div class="divlog">
-            <label for="password" class="label" name='password'>Password</label>
-            <input type="password" name="password" id="password" class="form-control" placeholder="Password">
-        </div>
-        {% if error_msg %}
-                <div class="text-center alert alert-danger">{{ error_msg }}</div>
-            {% endif %}
-        <div class="divlog idiv text-center">
-            <button type="submit" class="btn btn-primary">Log In</button>
-        </div>
-        <p class="text-center">Don't Have An Account? Sign Up <a href="{% url 'signup' %}" class="Login link">Here</a></p>
-        <!-- <div class="idiv text-center">
-            <p class="text-center">Don't Have An Account? Sign Up <a href="{% url 'signup' %}" class="Login">Here</a></p>
-        </div> -->
-    </form>
+    </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Toggle password visibility
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+                this.classList.toggle('text-primary');
+            });
+        }
+
+        // Add loading state to form submission
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function () {
+                const submitButton = this.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing In...';
+                    submitButton.disabled = true;
+                    submitButton.classList.add('loading');
+                }
+            });
+        }
+
+        // Auto-focus on email field
+        const emailField = document.getElementById('email');
+        if (emailField) {
+            emailField.focus();
+        }
+    });
+</script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock scripts %}

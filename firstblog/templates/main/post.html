@@ -1,100 +1,425 @@
-<main class="container">
-  <div class="row">
-    <div class="col-3 bg-light" id="side-div">
-      <h3 class="text-center">category</h3>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Aspernatur id
-        itaque beatae doloremque necessitatibus cumque exercitationem minima?
-        Error voluptatem dicta dolor harum blanditiis perspiciatis voluptas
-        enim, beatae atque rem laudantium tempora magni quaerat, laborum ex non
-        maiores ab maxime dolore illo? Cum minus aspernatur nulla nisi id
-        dolores necessitatibus unde odio perferendis? Illum modi, reiciendis
-        voluptate harum fuga quasi mollitia ullam vitae distinctio eius
-        voluptatibus adipisci recusandae praesentium nobis sequi voluptatem
-        eaque qui pariatur neque officia fugit commodi blanditiis quibusdam?
-        Dicta eos id veniam? Enim nemo, repellendus corporis ipsa mollitia
-        quidem dignissimos expedita deserunt aliquam odio dolore minus. Vero
-        magnam incidunt blanditiis exercitationem soluta, distinctio maiores
-        nihil fugit voluptatibus harum inventore temporibus aperiam saepe
-        dolorem? Minus voluptate soluta alias! Quidem expedita consectetur nam
-        illum dolorum voluptatem saepe vitae optio sapiente sequi, officia
-        doloremque consequatur accusamus beatae tempora eaque molestias modi
-        placeat quo quia corporis debitis. Molestias unde rem voluptates labore
-        ab eum rerum ipsam recusandae vel perspiciatis doloribus magnam, tenetur
-        quis excepturi sapiente eius esse quidem? Neque minima voluptas atque
-        modi. Inventore, ad maiores! Ipsa adipisci ipsum nesciunt fugit at
-        deleniti excepturi maiores molestias, pariatur, culpa mollitia optio?
-        Quam corrupti sed expedita facere labore hic impedit nobis, quidem
-        soluta provident.
-      </p>
+{% load static %}
+
+<!-- Main Content -->
+<div class="col-lg-9 col-md-8 ">
+  {% if not posts %}
+  <div class="text-center py-5">
+    <h3 class="text-muted">No posts yet</h3>
+    {% if user.is_authenticated and user.is_staff %}
+    <p class="text-muted">Be the first to create a post!</p>
+    <a href="{% url 'create_post' %}" class="btn btn-primary">Create First Post</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% for post in posts %}
+  <div class="card shadow-sm mb-4">
+    <!-- Card Header -->
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-start">
+        <h3 class="card-title h4 mb-1">{{ post.title }}</h3>
+        {% if user.is_authenticated and user.is_staff %}
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            Options
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'update_post' post.pk %}">Edit</a></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'delete_post' post.pk %}">Delete</a></li>
+          </ul>
+        </div>
+        {% endif %}
+      </div>
     </div>
-    <div class="col" id="div">
-      {% for post in posts %}
-      {% if post.add_image %}
-      <div class="container bg-light mb-2">
-        <div class="container">
-          <h3 class="h2 p-4"> {{post.title}} </h3>
+
+    <!-- Card Body -->
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="text-muted small">
+          <i class="fas fa-user"></i> By {{ post.author.username|upper }}
         </div>
-        <div class="container text-muted">
-          <small class="p-4">
-            By: {{post.author.username|upper}}, {{post.date_created|date:"d F, Y"}}
+        <div class="text-muted small">
+          <i class="fas fa-clock"></i> {{ post.date_created|date:"M d, Y" }}
+        </div>
+      </div>
+        {% if post.add_image %}
+        <div class="text-center mb-3">
+          <img src="{{ post.add_image.url }}" class="img-fluid rounded card-img-top" alt="{{ post.title }}"
+            style="max-height: 400px; object-fit: cover;">
+        </div>
+        {% endif %}
+  
+        <div class="tinymce-content">
+          {{ post.post|safe|truncatechars:1000 }}
+        </div>
+        {% if post.post|wordcount > 100 %}
+          <a href="{% url 'post_detail' post.pk %}" class='btn btn-sm btn-outline-primary read-more-btn card-link'>Read More</a>
+        {% endif %}
+    </div>
+
+    <!-- Card Footer -->
+    <div class="card-footer bg-light">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="post-actions">
+          <button class="btn btn-sm btn-outline-primary comment-toggle-btn" data-post-id="{{ post.pk }}">
+            <i class="fas fa-comment"></i>
+            Comments
+            <span class="badge bg-primary ms-1">{{ post.get_comment_count }}</span>
+          </button>
+          <!-- Like Post -->
+          <button class="comment-action-btn post-like-btn" data-post-id="{{ post.pk }}">
+              <i class="far fa-heart"></i>
+              <span class="like-count">{{ post.likes_count|default:0 }}</span>
+          </button>
+        </div>
+        <div class="post-meta">
+          {% if post.date_updated != post.date_created %}
+          <small class="text-muted">
+            Updated: {{ post.date_updated|date:"M d, Y" }}
           </small>
-          <br />
-          <small class="p-4">
-            Updated: {{post.date_updated|date:"d F, Y"}}
-          </small>
-        </div>
-        <div class="container text-center">
-          <img
-            src="{{post.add_image.url}}"
-            class="img-fluid rounded"
-            alt=""
-            width="40%"
-          />
-        </div>
-        <div class="container-sm">
-          <p class="p-4">{{post.post}}</p>
-        </div>
-        <hr/>
-        <div class="container option bg-primary" id="option">
-          {% if request.user == post.author %}
-          <a href="{% url 'update_post' post.pk %}" class="link">Edit</a>
-          <a href="{% url 'add_comment_to_post' post.pk %}" class="link"> Comment {{posts.comment_count}} </a>
-          <a href="{% url 'delete_post' post.pk %}" class="link">Delete</a>
-          {% else %}
-          <a href="{% url 'add_comment_to_post' post.pk %}" class="link"> Comment {{posts.comment_count}} </a>
           {% endif %}
         </div>
       </div>
+    </div>
+
+
+    <!-- Comments Section -->
+    <div class="comments-section" id="comments-{{ post.pk }}">
+      <!-- Comment Form -->
+      {% if user.is_authenticated %}
+      <div class="comment-form">
+        <h6 class="mb-3 fw-bold">Add a Comment</h6>
+        <form method="POST" action="{% url 'add_comment_to_post' post.pk %}">
+          {% csrf_token %}
+          <div class="comment-input-wrapper">
+            <div class="user-avatar">
+              {{ user.username|slice:":2"|upper }}
+            </div>
+            <div class="comment-input">
+              <textarea class="form-control" name="comment_text" rows="3" placeholder="What are your thoughts?"
+                required></textarea>
+              <div class="comment-actions">
+                <button type="button" class="btn btn-sm btn-light btn-comment cancel-comment-btn">Cancel</button>
+                <button type="submit" class="btn btn-sm btn-comment-primary btn-comment">Comment</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
       {% else %}
-      <div class="container bg-light cons mb-2">
-        <div class="container">
-          <h3 class="h2 p-4"> {{post.title}} </h3>
-        </div>
-        <div class="container text-muted">
-          <small class="p-4">
-            By: {{post.author.username|upper}}, {{post.date_created|date:"d F, Y"}}
-          </small>
-          <br />
-          <small class="p-4">
-            Updated: {{post.date_updated|date:"d F, Y"}}
-          </small>
-        </div>
-        <div class="container-sm">
-          <p class="p-4">{{post.post}}</p>
-        </div>
-        <div class="container option bg-primary" id="option">
-          {% if request.user == post.author %}
-          <a href="{% url 'update_post' post.pk %}" class="link">Edit</a>
-          <a href="{% url 'add_comment_to_post' post.pk %}" class="link"> Comment {{posts.comment_count}} </a>
-          <a href="{% url 'delete_post' post.pk %}" class="link">Delete</a>
-          {% else %}
-          <a href="{% url 'add_comment_to_post' post.pk %}" class="link"> Comment {{posts.comment_count}} </a>
-          {% endif %}
+      <div class="comment-form">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          Please <a href="{% url 'login' %}?next={{ request.path }}" class="alert-link">login</a> to comment.
         </div>
       </div>
       {% endif %}
-      {% endfor %}
+
+      <!-- Comments List -->
+      {% if post.comments.all %}
+      <div class="comments-list">
+        <h6 class="mb-3 fw-bold">Comments ({{ post.get_comment_count }})</h6>
+
+        {% for comment in post.comments.all %}
+        <div class="comment-item">
+          <div class="comment-header">
+            <div class="user-avatar">
+              {{ comment.author.username|slice:":2"|upper }}
+            </div>
+            <div class="comment-author">
+              <div class="comment-author-name">{{ comment.author.get_full_name|default:comment.author.username }}
+              </div>
+              <div class="comment-date">{{ comment.date_created|timesince }} ago</div>
+            </div>
+            {% if user == comment.author or user.is_staff %}
+            <div class="ms-auto">
+              <form method="POST" action="{% url 'delete_comment' comment.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm comment-delete-btn"
+                  onclick="return confirm('Are you sure you want to delete this comment?')">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+          <div class="comment-content">
+            {{ comment.text }}
+          </div>
+          <div class="comment-footer">
+            <button class="comment-action-btn like-btn" data-comment-id="{{ comment.pk }}">
+              <i class="far fa-heart"></i>
+              <span class="like-count">{{ comment.likes_count|default:0 }}</span>
+            </button>
+            {% if user.is_authenticated %}
+            <button class="comment-action-btn reply-btn" data-comment-id="{{ comment.pk }}">
+              <i class="fas fa-reply"></i>
+              Reply
+            </button>
+            {% endif %}
+          </div>
+
+          <!-- Existing Replies -->
+          {% if comment.replies.all %}
+          <div class="reply-section" style="display: block;">
+            {% for reply in comment.replies.all %}
+            <div class="reply-item">
+              <div class="comment-header">
+                <div class="user-avatar small">
+                  {{ reply.author.username|slice:":2"|upper }}
+                </div>
+                <div class="comment-author">
+                  <div class="comment-author-name">{{ reply.author.get_full_name|default:reply.author.username }}
+                  </div>
+                  <div class="comment-date">{{ reply.date_created|timesince }} ago</div>
+                </div>
+                {% if user == reply.author or user.is_staff %}
+                <div class="ms-auto">
+                  <form method="POST" action="{% url 'delete_comment' reply.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm comment-delete-btn"
+                      onclick="return confirm('Are you sure you want to delete this reply?')">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+                {% endif %}
+              </div>
+              <div class="comment-content small">
+                {{ reply.text }}
+              </div>
+              <div class="comment-footer small">
+                <button class="comment-action-btn like-btn" data-comment-id="{{ reply.pk }}">
+                  <i class="far fa-heart"></i>
+                  <span class="like-count">{{ reply.likes_count|default:0 }}</span>
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Reply Form -->
+          {% if user.is_authenticated %}
+          <div class="reply-section" style="display: none;" id="reply-section-{{ comment.pk }}">
+            <div class="reply-form">
+              <form method="POST" action="{% url 'add_reply_to_comment' comment.pk %}">
+                {% csrf_token %}
+                <div class="comment-input-wrapper">
+                  <div class="user-avatar small">
+                    {{ user.username|slice:":2"|upper }}
+                  </div>
+                  <div class="comment-input">
+                    <textarea class="form-control form-control-sm" name="reply_text" rows="2"
+                      placeholder="Write a reply..." required></textarea>
+                    <div class="comment-actions">
+                      <button type="button" class="btn btn-sm btn-light btn-comment cancel-reply">Cancel</button>
+                      <button type="submit" class="btn btn-sm btn-comment-primary btn-comment">Reply</button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="comments-empty">
+        <i class="far fa-comments"></i>
+        <p class="mb-0">No comments yet. Be the first to share your thoughts!</p>
+      </div>
+      {% endif %}
     </div>
   </div>
-</main>
+  {% endfor %}
+
+  <!-- Pagination -->
+  {% if posts.has_other_pages %}
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      {% if posts.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ posts.previous_page_number }}">Previous</a>
+      </li>
+      {% endif %}
+
+      {% for num in posts.paginator.page_range %}
+      {% if posts.number == num %}
+      <li class="page-item active">
+        <span class="page-link">{{ num }}</span>
+      </li>
+      {% else %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+      </li>
+      {% endif %}
+      {% endfor %}
+
+      {% if posts.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ posts.next_page_number }}">Next</a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Toggle comments section
+    const commentToggleBtns = document.querySelectorAll('.comment-toggle-btn');
+
+    commentToggleBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const postId = this.getAttribute('data-post-id');
+        const commentsSection = document.getElementById(`comments-${postId}`);
+
+        commentsSection.classList.toggle('show');
+        this.classList.toggle('active');
+      });
+    });
+
+    // Like button functionality (you'll need AJAX for this)
+    const likeBtns = document.querySelectorAll('.like-btn');
+
+    likeBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const commentId = this.getAttribute('data-comment-id');
+
+        // Make AJAX call to like endpoint
+        fetch(`/comment/${commentId}/like/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              this.classList.toggle('liked');
+              const icon = this.querySelector('i');
+              const countSpan = this.querySelector('.like-count');
+
+              if (this.classList.contains('liked')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+              } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+              }
+              countSpan.textContent = data.likes_count;
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      });
+    });
+    
+
+    // Post_Likes button functionality (you'll need AJAX for this)
+    const postLikeBtns = document.querySelectorAll('.post-like-btn');
+    postLikeBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const postId = this.getAttribute('data-post-id');
+
+        // Make AJAX call to like endpoint
+        fetch(`/post/${postId}/like/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              this.classList.toggle('liked');
+              const icon = this.querySelector('i');
+              const countSpan = this.querySelector('.like-count');
+
+              if (this.classList.contains('liked')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+              } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+              }
+              countSpan.textContent = data.likes_count;
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      });
+    });
+
+    // Reply button functionality
+    const replyBtns = document.querySelectorAll('.reply-btn');
+
+    replyBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const commentId = this.getAttribute('data-comment-id');
+        const replySection = document.getElementById(`reply-section-${commentId}`);
+
+        // Hide all other reply forms
+        document.querySelectorAll('.reply-section .reply-form').forEach(form => {
+          if (form.parentElement.id !== `reply-section-${commentId}`) {
+            form.parentElement.style.display = 'none';
+          }
+        });
+
+        // Toggle this reply section
+        if (replySection.style.display === 'none') {
+          replySection.style.display = 'block';
+          replySection.querySelector('textarea').focus();
+        } else {
+          replySection.style.display = 'none';
+        }
+      });
+    });
+
+    // Cancel reply button
+    const cancelReplyBtns = document.querySelectorAll('.cancel-reply');
+
+    cancelReplyBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const replyForm = this.closest('.reply-section');
+        replyForm.style.display = 'none';
+        replyForm.querySelector('textarea').value = '';
+      });
+    });
+
+    // Cancel comment button
+    const cancelCommentBtns = document.querySelectorAll('.cancel-comment-btn');
+
+    cancelCommentBtns.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const form = this.closest('form');
+        form.querySelector('textarea').value = '';
+      });
+    });
+
+    // Auto-expand textarea
+    document.querySelectorAll('textarea').forEach(textarea => {
+      textarea.addEventListener('focus', function () {
+        if (this.rows < 4) {
+          this.rows = 4;
+        }
+      });
+
+      textarea.addEventListener('blur', function () {
+        if (!this.value && this.rows > 3) {
+          setTimeout(() => {
+            if (!this.value) {
+              this.rows = 3;
+            }
+          }, 200);
+        }
+      });
+    });
+
+    // Read More functionality
+    
+  });
+</script>

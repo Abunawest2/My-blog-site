@@ -1,6 +1,8 @@
+# models.py
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from multiselectfield import MultiSelectField
+from tinymce import models as tinymce_models
+
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -22,6 +24,7 @@ class CustomUserManager(BaseUserManager):
 
         return self.create_user(email, password, **extra_fields)
 
+
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
@@ -29,6 +32,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=100, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(auto_now_add=True)
 
     objects = CustomUserManager()
 
@@ -36,17 +40,28 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['username']
 
     class Meta:
-        verbose_name = "Author"
-        verbose_name_plural = "Author"
+        verbose_name = "author"
+        verbose_name_plural = "authors"
         
     def __str__(self):
         return self.username
+    @property
+    def get_full_name(self):
+        """Return full name or username as fallback"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}".strip()
+        elif self.first_name:
+            return self.first_name
+        elif self.last_name:
+            return self.last_name
+        return self.username
 
 class BlogPost(models.Model):
-    author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, verbose_name='Writer')
+    author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, verbose_name='author')
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='posts')
     title = models.CharField(max_length=100)
     add_image = models.ImageField(null=True, blank=True, upload_to='image/')
-    post = models.TextField()
+    post = tinymce_models.HTMLField()
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
@@ -57,17 +72,95 @@ class BlogPost(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def get_comment_count(self):
+        """Return count of top-level comments only (not replies)"""
+        return self.comments.filter(parent=None).count()
 
+    @property
+    def likes_count(self):
+        """Return the number of likes for this comment"""
+        return self.post_likes.count()
+    
+    
+    def is_liked_by(self, user):
+        """Check if a specific user has liked this comment"""
+        if user.is_authenticated:
+            return self.post_likes.filter(user=user).exists()
+        return False
+
+
+class PostLike(models.Model):
+    post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='post_likes')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='post_likes')
+    date_created = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('post', 'user')
+        verbose_name = "Post Like"
+        verbose_name_plural = "Post Likes"
+        ordering = ['-date_created']
+    
+    def __str__(self):
+        return f"{self.user.username} likes Post by {self.post.author.username}"
 
 class Comment(models.Model):
     post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='comments')
-    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_comments')
     text = models.TextField()
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
     date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Comment"
-        verbose_name_plural = "Comment"
+        verbose_name_plural = "Comments"
+        ordering = ['date_created']
 
     def __str__(self):
-        return self.text
+        return f"{self.author.username}: {self.text[:50]}"
+    
+    @property
+    def likes_count(self):
+        """Return the number of likes for this comment"""
+        return self.likes.count()
+    
+    def is_liked_by(self, user):
+        """Check if a specific user has liked this comment"""
+        if user.is_authenticated:
+            return self.likes.filter(user=user).exists()
+        return False
+
+class CommentLike(models.Model):
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='comment_likes')
+    date_created = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('comment', 'user')
+        verbose_name = "Comment Like"
+        verbose_name_plural = "Comment Likes"
+        ordering = ['-date_created']
+    
+    def __str__(self):
+        return f"{self.user.username} likes comment by {self.comment.author.username}"
+
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+    
+    @property
+    def post_count(self):
+        """Return count of posts in this category"""
+        return self.posts.count()
