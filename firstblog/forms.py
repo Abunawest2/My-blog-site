@@ -75,7 +75,56 @@ class BlogPostForm(forms.ModelForm):
     
     class Meta:
         model = BlogPost
-        fields = ['title', 'add_image', 'post']
+        fields = ['title', 'category', 'add_image', 'post']
+    
+    def clean_add_image(self):
+        """Validate image file size"""
+        image = self.cleaned_data.get('add_image')
+        if image:
+            if image.size > 5 * 1024 * 1024:
+                raise forms.ValidationError('Image file size cannot exceed 5MB.')
+        return image
+    
+    def clean_title(self):
+        """Clean and validate title"""
+        title = self.cleaned_data.get('title')
+        if title:
+            title = ' '.join(title.split())
+            if len(title) < 5:
+                raise forms.ValidationError('Title must be at least 5 characters long.')
+        return title
+    
+    def clean_post(self):
+        """Clean and validate post content"""
+        post = self.cleaned_data.get('post')
+        if post:
+            # Remove HTML tags for character count validation
+            import re
+            text_content = re.sub('<[^<]+?>', '', post)
+            text_content = '\n\n'.join([' '.join(p.split()) for p in text_content.split('\n\n')])
+            
+            if len(text_content) < 50:
+                raise forms.ValidationError('Post content must be at least 50 characters long.')
+        return post
+
+
+class AdminBlogPostForm(forms.ModelForm):
+    post = forms.CharField(
+        label='Post Content',
+        widget=TinyMCE(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'Share your story with the world...',
+                'id': 'id_post'
+            }
+        ),
+        required=True,
+        help_text='Write the main content of your blog post'
+    )
+    
+    class Meta:
+        model = BlogPost
+        fields = "__all__"
     
     def clean_add_image(self):
         """Validate image file size"""

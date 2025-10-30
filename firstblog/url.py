@@ -21,7 +21,7 @@ urlpatterns = [
     # Search & Filter URLs
     path('search/', views.search_posts, name='search_posts'),
     path('category/<str:category_name>/', views.category_posts, name='category_posts'),
-    path('author/<str:username>/', views.author_profile, name='author_profile'),
+    path('author/<path:username>/', views.author_profile, name='author_profile'),
     path('archive/', views.archive, name='archive'),
     
     # Comment URLs

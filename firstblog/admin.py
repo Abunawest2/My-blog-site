@@ -2,12 +2,12 @@
 # from django.contrib.admin import ModelAdmin
 from django.contrib import admin
 from .models import BlogPost, PostLike, CustomUser, Comment, CommentLike, Category
-from django.contrib.auth.models import User
-from .forms import BlogPostForm
 from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
-from unfold.forms import UserChangeForm, UserCreationForm, AdminPasswordChangeForm, AdminOwnPasswordChangeForm
+from unfold.forms import UserChangeForm, UserCreationForm, AdminPasswordChangeForm
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
+from .forms import AdminBlogPostForm
 
 
 @admin.register(CustomUser)
@@ -35,8 +35,9 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
 
 @admin.register(BlogPost)
 class BlogPostAdmin(ModelAdmin):
-    list_display = ['id','title', 'author', 'date_created', 'get_comment_count', 'likes_count']
-    list_display_links = ['id', 'title']
+    form = AdminBlogPostForm
+    list_display = ['id','title', 'category', 'author', 'date_created', 'get_comment_count', 'likes_count']
+    list_display_links = ['id', 'title', 'category']
     list_filter = ['date_created', 'author', ('date_created', RangeDateFilter)]
     list_filter_submit = True
     search_fields = ['title', 'post']

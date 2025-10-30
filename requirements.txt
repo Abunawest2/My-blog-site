@@ -2,6 +2,7 @@ Django
 Pillow
 django-multiselectfield
 asgiref
-sqlparse,
+sqlparse
 django-tinymce
 django-unfold
+mysqlclient

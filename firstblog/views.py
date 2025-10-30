@@ -35,11 +35,11 @@ def signup(request):
                 'password1_errors': form.errors.get('password1', []),
                 'password2_errors': form.errors.get('password2', []),
             }
-            return render(request, 'main/forms.html', context)
+            return render(request, 'main/signup.html', context)
     else:
         form = UserForm()
         context = {'form': form}
-        return render(request, 'main/forms.html', context)
+        return render(request, 'main/signup.html', context)
 
 
 def SignIn(request):
@@ -216,11 +216,24 @@ def author_profile(request, username):
     total_posts = posts_list.count()
     total_comments = Comment.objects.filter(post__author=author).count()
     
+    # Get related posts (from the same categories as the author's posts)
+    author_categories = Category.objects.filter(posts__author=author).distinct()
+    related_posts = BlogPost.objects.filter(category__in=author_categories).exclude(author=author).distinct().order_by('-date_created')[:5]
+
+    # For non-staff users, suggest topics based on their activity
+    suggested_topics = None
+    if not author.is_staff:
+        liked_posts_categories = Category.objects.filter(posts__post_likes__user=author).distinct()
+        commented_posts_categories = Category.objects.filter(posts__comments__author=author).distinct()
+        suggested_topics = (liked_posts_categories | commented_posts_categories).distinct()
+
     context = {
         'author': author,
         'posts': posts,
         'total_posts': total_posts,
         'total_comments': total_comments,
+        'related_posts': related_posts,
+        'suggested_topics': suggested_topics,
     }
     return render(request, 'main/author_profile.html', context)
 
@@ -276,6 +289,7 @@ def toggle_post_like(request, post_pk):
 @login_required
 @user_passes_test(is_staff_user, login_url='home')
 def create_post(request):
+    categories = Category.objects.all()
     if request.method == 'POST':
         form = BlogPostForm(request.POST, request.FILES)
         if form.is_valid():
@@ -289,13 +303,14 @@ def create_post(request):
     else:
         form = BlogPostForm(initial={'author': request.user})
     
-    return render(request, 'main/create_post.html', {'form': form})
+    return render(request, 'main/create_update_post.html', {'form': form, 'categories': categories})
 
 
 @login_required
 @user_passes_test(is_staff_user, login_url='home')
 def update_post(request, pk):
     post = get_object_or_404(BlogPost, id=pk)
+    categories = Category.objects.all()
     
     if request.method == 'POST':
         form = BlogPostForm(request.POST, request.FILES, instance=post)
@@ -308,7 +323,7 @@ def update_post(request, pk):
     else:
         form = BlogPostForm(instance=post)
     
-    return render(request, 'main/create_post.html', {'form': form})
+    return render(request, 'main/create_update_post.html', {'form': form, 'categories':categories})
 
 
 @login_required

@@ -1,7 +1,6 @@
 # models.py
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from tinymce import models as tinymce_models
 
 
 class CustomUserManager(BaseUserManager):
@@ -61,7 +60,7 @@ class BlogPost(models.Model):
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='posts')
     title = models.CharField(max_length=100)
     add_image = models.ImageField(null=True, blank=True, upload_to='image/')
-    post = tinymce_models.HTMLField()
+    post = models.TextField()
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
@@ -72,6 +71,12 @@ class BlogPost(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def save(self):
+        """Override save to add custom behavior if needed"""
+        if not self.author.is_staff:
+            raise ValueError("Only staff users can create blog posts.")
+        return super().save()
     
     def get_comment_count(self):
         """Return count of top-level comments only (not replies)"""

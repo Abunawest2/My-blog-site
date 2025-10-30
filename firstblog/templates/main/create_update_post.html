@@ -64,6 +64,32 @@
                 {% endif %}
             </div>
 
+            <!-- Corrected Category Field -->
+            <div class="form-group">
+                <label for="category" class="form-label">
+                    <i class="fas fa-folder"></i>
+                    Topic Category
+                    <span class="required-asterisk">*</span>
+                </label>
+                <select class="form-select" id="category" name="category" aria-label="Category selection">
+                    <option value="">Choose Topic Category</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" 
+                            {% if form.category.value == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if form.category.errors %}
+                {% for error in form.category.errors %}
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Rest of your form remains the same -->
             <!-- Image Upload Field -->
             <div class="form-group">
                 <label for="{{ form.add_image.id_for_label }}" class="form-label">
