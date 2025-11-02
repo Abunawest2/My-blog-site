@@ -23,8 +23,13 @@
       <div class="post-meta-item">
         <i class="fas fa-user"></i>
         <span>By
-          <a href="{% url 'author_profile' post.author.username %}" class="author-link">
-            {{ post.author.username}}</a>
+          {% if post.author.get_full_name %}
+            <a href="{% url 'author_profile' post.author.username %}" class="author-link">
+              {{ post.author.get_full_name|upper }}</a>
+          {% else %}
+            <a href="{% url 'author_profile' post.author.username %}" class="author-link">
+              {{ post.author.username|upper }}</a>
+          {% endif %}
         </span>
       </div>
       <div class="post-meta-item">

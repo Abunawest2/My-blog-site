@@ -1,5 +1,6 @@
 {% extends "main/base.html" %}
 {% load static %}
+{%load socialaccount%}
 {% block title %}
 Register - MyBlog
 {% endblock title %}
@@ -97,12 +98,21 @@ Register - MyBlog
                         <div class="social-divider">
                             <span>OR CONTINUE WITH</span>
                         </div>
-                        <div class="s-btn">
+                        {% comment %} <div class="s-btn">
 
                             <a href="" class="social-btn social-google">
                                 <i class="fab fa-google me-2"></i>Google
                             </a>
                             <a href="" class="social-btn social-github">
+                                <i class="fab fa-github me-2"></i>GitHub
+                            </a>
+                        </div> {% endcomment %}
+
+                        <div class="social-buttons">
+                            <a href="{% provider_login_url 'google'%}" class="social-btn social-google">
+                                <i class="fab fa-google me-2"></i>Google
+                            </a>
+                            <a href="{% provider_login_url 'github' %}" class="social-btn social-github">
                                 <i class="fab fa-github me-2"></i>GitHub
                             </a>
                         </div>

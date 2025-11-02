@@ -210,7 +210,13 @@
 .post-like-btn.liked {
   background: var(--primary-color);
   border-color: var(--primary-color);
+  color: var(--text-white);
 }
+
+.post-like-btn.liked .fa-heart {
+    color: var(--text-white);
+}
+
 
 /* Comment Form */
 .comment-form {

@@ -9,16 +9,12 @@
     <title>{% block title %}My Blog{% endblock title %}</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <link rel="stylesheet" href="{% static 'css/nav.css' %}">
-    <link rel="stylesheet" href="{% static 'css/tinymce-content.css' %}">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    {% block css %}
-    {% endblock css %}
+    {% block css %}{% endblock css %}
 </head>
 
 <body>
@@ -59,15 +55,7 @@
                                 <span>Advanced Search</span>
                             </a>
                         </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'archive' %}active{% endif %}"
-                                href="{% url 'archive' %}">
-                                <i class="fas fa-archive"></i>
-                                <span>Archive</span>
-                            </a>
-                        </li>
-
+                        
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}"
                                 href="{% url 'about' %}">

@@ -2,7 +2,7 @@
 
 /* Root Variables - Make sure these are defined in your index.css */
 :root {
-  --nav-height: 70px;
+  --nav-height: 80px;
 }
 
 /* ===== MAIN NAVBAR CONTAINER ===== */
@@ -22,12 +22,6 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0.1) 100%
-  );
   pointer-events: none;
   z-index: -1;
 }
@@ -209,7 +203,7 @@
 }
 
 .nav-link.active {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
   color: var(--text-white);
   border-color: rgba(255, 255, 255, 0.3);
   box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -278,7 +272,7 @@
   outline: none;
   background: rgba(255, 255, 255, 0.18);
   border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: var(--shadow-lg), 0 0 25px rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-md), 0 0 25px rgba(255, 255, 255, 0.15);
 }
 
 .search-btn {
@@ -298,10 +292,10 @@
 }
 
 .search-btn:hover {
-  background: var(--secondary-color);
-  color: var(--text-white);
   transform: translateY(-50%) scale(1.08);
   box-shadow: var(--shadow-md);
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 4px 12px var(--primary-color);
 }
 
 /* ===== USER AVATAR ===== */
@@ -747,7 +741,7 @@ main.container {
 .search-input:focus,
 .search-btn:focus,
 .user-dropdown-toggle:focus {
-  outline: 3px solid var(--secondary-color);
+  /* outline: 3px solid var(--primary-color); */
   outline-offset: 2px;
 }
 

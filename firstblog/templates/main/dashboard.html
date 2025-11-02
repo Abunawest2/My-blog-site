@@ -14,7 +14,7 @@
   <!-- Dashboard Header -->
   <div class="dashboard-header">
     <h1><i class="fas fa-tachometer-alt me-2"></i>My Dashboard</h1>
-    <p>Welcome back, {{ user.username }}! Here's your activity overview.</p>
+    <p>Welcome back, {{ user.get_full_name|capfirst }}! Here's your activity overview.</p>
   </div>
 
   <!-- Statistics Cards -->
@@ -51,124 +51,166 @@
       <div class="stat-value">{{ total_comment_likes }}</div>
       <div class="stat-label">Comment Likes Received</div>
     </div>
+    {% if user.is_staff %}
     <div class="stat-card">
       <div class="stat-icon green">
         <i class="fas fa-heart"></i>
       </div>
-      {% if user.is_staff %}
+      
         <div class="stat-value">{{ total_post_likes }}</div>
         <div class="stat-label">Post Likes Received</div>
-      {% endif %}
-      
     </div>
+    {% endif %}
   </div>
 
   <!-- My Posts Section -->
-  
-  <div class="dashboard-section">
+<div class="dashboard-section">
     {% if not user.is_staff %}
+    <!-- Recently Viewed Posts for Regular Users -->
     <div class="section-header">
-      <h2 class="section-title">
+        <h2 class="section-title">
+            <i class="fas fa-file-alt"></i>
+            Recently Viewed Posts
+        </h2>
+    </div>
+
+    {% if recently_viewed %}
+    {% for view in recently_viewed %}
+    <div class="post-list-item">
+        <div class="post-list-title">
+            <a href="{% url 'post_detail' view.post.pk %}">{{ view.post.title }}</a>
+        </div>
+        <div class="post-list-meta">
+            <span>
+                <i class="fas fa-calendar"></i>
+                {{ view.post.date_created|date:"M d, Y" }}
+            </span>
+            <span>
+                <i class="fas fa-comment"></i>
+                {{ view.post.get_comment_count }} comment{{ view.post.get_comment_count|pluralize }}
+            </span>
+            <span>
+                <i class="fas fa-eye"></i>
+                Viewed {{ view.viewed_at|timesince }} ago
+            </span>
+            {% if view.post.date_updated != view.post.date_created %}
+            <span>
+                <i class="fas fa-edit"></i>
+                Updated {{ view.post.date_updated|timesince }} ago
+            </span>
+            {% endif %}
+        </div>
+        <div class="post-list-actions">
+            <a href="{% url 'post_detail' view.post.pk %}" class="post-action-btn">
+                <i class="fas fa-eye"></i>
+                View Again
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
         <i class="fas fa-file-alt"></i>
-        Recently Viewed Posts
-      </h2>
+        <p>Go to the Homepage and Read the latest topic on Tech and Business.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary mt-3">
+            <i class="fas fa-home me-2"></i>Browse Posts
+        </a>
+    </div>
+    {% endif %}
 
     {% else %}
-      <div class="section-header">
-      <h2 class="section-title">
-        <i class="fas fa-file-alt"></i>
-        My Posts
-      </h2>
-      <a href="{% url 'create_post' %}" class="create-post-btn">
-        <i class="fas fa-plus"></i>
-        Create New Post
-      </a>
-    {% endif %} 
+    <!-- My Posts for Staff Users -->
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-file-alt"></i>
+            My Posts
+        </h2>
+        <a href="{% url 'create_post' %}" class="create-post-btn">
+            <i class="fas fa-plus"></i>
+            Create New Post
+        </a>
     </div>
 
     {% if posts %}
     {% for post in posts %}
     <div class="post-list-item">
-      <div class="post-list-title">
-        <a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a>
-      </div>
-      <div class="post-list-meta">
-        <span>
-          <i class="fas fa-calendar"></i>
-          {{ post.date_created|date:"M d, Y" }}
-        </span>
-        <span>
-          <i class="fas fa-comment"></i>
-          {{ post.get_comment_count }} comment{{ post.get_comment_count|pluralize }}
-        </span>
-        {% if post.date_updated != post.date_created %}
-        <span>
-          <i class="fas fa-edit"></i>
-          Updated {{ post.date_updated|timesince }} ago
-        </span>
-        {% endif %}
-      </div>
-      {% if user.is_staff %}
-      <div class="post-list-actions">
-        <a href="{% url 'post_detail' post.pk %}" class="post-action-btn">
-          <i class="fas fa-eye"></i>
-          View
-        </a>
-        <a href="{% url 'update_post' post.pk %}" class="post-action-btn">
-          <i class="fas fa-edit"></i>
-          Edit
-        </a>
-        <a href="{% url 'delete_post' post.pk %}" class="post-action-btn danger">
-          <i class="fas fa-trash"></i>
-          Delete
-        </a>
-      </div>
-      {% endif %}
+        <div class="post-list-title">
+            <a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a>
+        </div>
+        <div class="post-list-meta">
+            <span>
+                <i class="fas fa-calendar"></i>
+                {{ post.date_created|date:"M d, Y" }}
+            </span>
+            <span>
+                <i class="fas fa-comment"></i>
+                {{ post.get_comment_count }} comment{{ post.get_comment_count|pluralize }}
+            </span>
+            {% if post.date_updated != post.date_created %}
+            <span>
+                <i class="fas fa-edit"></i>
+                Updated {{ post.date_updated|timesince }} ago
+            </span>
+            {% endif %}
+        </div>
+        <div class="post-list-actions">
+            <a href="{% url 'post_detail' post.pk %}" class="post-action-btn">
+                <i class="fas fa-eye"></i>
+                View
+            </a>
+            <a href="{% url 'update_post' post.pk %}" class="post-action-btn">
+                <i class="fas fa-edit"></i>
+                Edit
+            </a>
+            <a href="{% url 'delete_post' post.pk %}" class="post-action-btn danger">
+                <i class="fas fa-trash"></i>
+                Delete
+            </a>
+        </div>
     </div>
     {% endfor %}
 
     <!-- Pagination -->
     {% if posts.has_other_pages %}
     <nav aria-label="Page navigation" class="mt-4">
-      <ul class="pagination justify-content-center">
-        {% if posts.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ posts.previous_page_number }}">Previous</a>
-        </li>
-        {% endif %}
+        <ul class="pagination justify-content-center">
+            {% if posts.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ posts.previous_page_number }}">Previous</a>
+            </li>
+            {% endif %}
 
-        {% for num in posts.paginator.page_range %}
-        {% if posts.number == num %}
-        <li class="page-item active">
-          <span class="page-link">{{ num }}</span>
-        </li>
-        {% else %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-        </li>
-        {% endif %}
-        {% endfor %}
+            {% for num in posts.paginator.page_range %}
+            {% if posts.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
 
-        {% if posts.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ posts.next_page_number }}">Next</a>
-        </li>
-        {% endif %}
-      </ul>
+            {% if posts.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ posts.next_page_number }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
     </nav>
     {% endif %}
     {% else %}
     <div class="empty-state">
-      <i class="fas fa-file-alt"></i>
-      <p>Go to the Homepage and Read the latest topic on Tech and Business.</p>
-      {% if user.is_staff %}
-      <a href="{% url 'create_post' %}" class="btn btn-primary mt-3">
-        <i class="fas fa-plus me-2"></i>Create Your First Post
-      </a>
-      {% endif %}
+        <i class="fas fa-file-alt"></i>
+        <p>You haven't created any posts yet.</p>
+        <a href="{% url 'create_post' %}" class="btn btn-primary mt-3">
+            <i class="fas fa-plus me-2"></i>Create Your First Post
+        </a>
     </div>
     {% endif %}
-  </div>
+    {% endif %}
+</div>
 
   <!-- Recent Comments Section -->
   <div class="dashboard-section">

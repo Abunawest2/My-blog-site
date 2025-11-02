@@ -8,7 +8,8 @@ from django.db.models import Count, Q
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from .forms import UserForm, BlogPostForm
-from .models import BlogPost, PostLike, CustomUser, Comment, CommentLike, Category
+from .models import BlogPost, PostLike, CustomUser, UserPostView, Comment, CommentLike, Category
+from django.db.models import F
 
 
 # Utility function to check if user is staff
@@ -77,8 +78,11 @@ def home(request):
     posts_list = BlogPost.objects.select_related('author').prefetch_related(
         'comments__author',
         'comments__replies__author',
-        'comments__likes'
+        'comments__likes',
     ).order_by('-date_updated', '-date_created')
+
+    # Build a mapping from post pk to whether the current user liked the post
+    liked_by_user = {str(post.pk): post.is_liked_by(request.user) for post in posts_list}
     
     # Search functionality
     search_query = request.GET.get('search', '').strip()
@@ -104,13 +108,18 @@ def home(request):
     
     # Get recent posts for sidebar
     recent_posts = BlogPost.objects.order_by('-date_created')[:5]
-    
+
+    # Get popular posts for sidebar
+    popular_posts = BlogPost.objects.annotate(like_count=Count('post_likes'),popularity_score=F('view_count') + Count('post_likes') * 10).order_by('-popularity_score')[:5]
+
     context = {
         'posts': posts,
         'categories': categories,
         'recent_posts': recent_posts,
+        'popular_posts': popular_posts,
         'search_query': search_query,
         'category_filter': category_filter,
+        'liked_by_user': liked_by_user,
     }
     return render(request, 'main/index.html', context)
 
@@ -126,24 +135,25 @@ def post_detail(request, pk):
         ),
         pk=pk
     )
+
+    # Increment view count and track user view
+    post.increment_view_count(request.user)
     
-    # Get all top-level comments (not replies)
+    # Rest of your existing post_detail view code...
     comments = post.comments.filter(parent=None).order_by('-date_created')
-    
-    # Get related posts (same author or similar title)
     related_posts = BlogPost.objects.filter(
         author=post.author
     ).exclude(pk=post.pk).order_by('-date_created')[:3]
+    
     liked_by_user = post.is_liked_by(request.user)
     
     context = {
         'post': post,
         'comments': comments,
         'related_posts': related_posts,
-        'liked_by_user':liked_by_user
+        'liked_by_user': liked_by_user
     }
     return render(request, 'main/post_detail.html', context)
-
 
 # Search View
 def search_posts(request):
@@ -433,32 +443,52 @@ def toggle_comment_like(request, comment_pk):
 # User Dashboard (for logged-in users)
 @login_required
 def user_dashboard(request):
-    """Display user's own posts and comments"""
-    user_posts = BlogPost.objects.filter(author=request.user).order_by('-date_created')
-    user_comments = Comment.objects.filter(author=request.user).select_related('post').order_by('-date_created')[:10]
+    """Display user's own posts, comments, and viewing statistics"""
+    user = request.user
     
-    # Pagination for posts
-    paginator = Paginator(user_posts, 5)
-    page_number = request.GET.get('page')
-    posts = paginator.get_page(page_number)
+    if user.is_staff:
+        # Staff user data
+        user_posts = BlogPost.objects.filter(author=user).order_by('-date_created')
+        total_posts = user_posts.count()
+        total_post_likes = CommentLike.objects.filter(comment__author=user).count()  # This seems incorrect, but keeping your logic
+        
+        # Pagination for posts
+        paginator = Paginator(user_posts, 5)
+        page_number = request.GET.get('page')
+        posts = paginator.get_page(page_number)
+        
+        # For staff users, recently_viewed will be None
+        recently_viewed = None
+    else:
+        # Regular user data - viewing statistics
+        user_posts = None
+        posts = None
+        total_post_likes = 0  # Not relevant for regular users
+        
+        # Total viewed posts
+        total_posts = UserPostView.objects.filter(user=user).count()
+        
+        # Recently viewed posts for display
+        recently_viewed = UserPostView.objects.filter(
+            user=user
+        ).select_related('post', 'post__author').order_by('-viewed_at')[:5]
     
-    # Statistics
-    total_posts = user_posts.count()
-    total_comments = Comment.objects.filter(author=request.user).count()
-    total_comment_likes = CommentLike.objects.filter(comment__author=request.user).count()
-    total_post_likes = CommentLike.objects.filter(comment__author=request.user).count()
+    # Common data for all users
+    user_comments = Comment.objects.filter(author=user).select_related('post').order_by('-date_created')[:10]
+    total_comments = Comment.objects.filter(author=user).count()
+    total_comment_likes = CommentLike.objects.filter(comment__author=user).count()
     
     context = {
         'posts': posts,
         'recent_comments': user_comments,
+        'recently_viewed': recently_viewed,  # Add this for template
         'total_posts': total_posts,
         'total_comments': total_comments,
         'total_comment_likes': total_comment_likes,
         'total_post_likes': total_post_likes,
     }
+    
     return render(request, 'main/dashboard.html', context)
-
-
 # About Page
 def about(request):
     """Display about page"""

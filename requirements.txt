@@ -6,3 +6,4 @@ sqlparse
 django-tinymce
 django-unfold
 mysqlclient
+django-allauth[socialaccount]

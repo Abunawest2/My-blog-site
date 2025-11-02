@@ -25,7 +25,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=50, unique=True)
+    username = models.CharField(max_length=50, unique=True, default="LEGGETECH")
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
@@ -39,11 +39,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['username']
 
     class Meta:
-        verbose_name = "author"
-        verbose_name_plural = "authors"
+        verbose_name = "user"
+        verbose_name_plural = "users"
         
-    def __str__(self):
-        return self.username
+    
     @property
     def get_full_name(self):
         """Return full name or username as fallback"""
@@ -53,7 +52,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             return self.first_name
         elif self.last_name:
             return self.last_name
-        return self.username
+        return f"{self.username}"
+    
+
+    def __str__(self):
+        return f"{self.username}"
 
 class BlogPost(models.Model):
     author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, verbose_name='author')
@@ -63,6 +66,10 @@ class BlogPost(models.Model):
     post = models.TextField()
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+    view_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of times product has been viewed"
+    )
 
     class Meta:
         ordering = ['-date_updated', '-date_created']
@@ -72,11 +79,11 @@ class BlogPost(models.Model):
     def __str__(self):
         return self.title
     
-    def save(self):
+    def save(self, *args, **kwargs):
         """Override save to add custom behavior if needed"""
-        if not self.author.is_staff:
+        if self.author and not self.author.is_staff:
             raise ValueError("Only staff users can create blog posts.")
-        return super().save()
+        return super().save(*args, **kwargs)
     
     def get_comment_count(self):
         """Return count of top-level comments only (not replies)"""
@@ -84,7 +91,7 @@ class BlogPost(models.Model):
 
     @property
     def likes_count(self):
-        """Return the number of likes for this comment"""
+        """Return the number of likes for this Post"""
         return self.post_likes.count()
     
     
@@ -93,7 +100,27 @@ class BlogPost(models.Model):
         if user.is_authenticated:
             return self.post_likes.filter(user=user).exists()
         return False
+    
+    def increment_view_count(self, user=None):
+        """Increment view count without updating date_updated"""
+        from django.db.models import F
+        BlogPost.objects.filter(pk=self.pk).update(view_count=F('view_count') + 1)
+        if user and user.is_authenticated:
+            UserPostView.objects.get_or_create(user=user, post=self)
+        self.refresh_from_db(fields=['view_count'])
 
+class UserPostView(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='post_views')
+    post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='user_views')
+    viewed_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['user', 'post']
+        ordering = ['-viewed_at']
+    
+    def __str__(self):
+        return f"{self.user.username} viewed {self.post.title}"
+    
 
 class PostLike(models.Model):
     post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='post_likes')

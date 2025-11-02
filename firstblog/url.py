@@ -38,4 +38,6 @@ urlpatterns = [
     
     # Legacy view (optional - for backwards compatibility)
     path('post/<int:pk>/comments/', views.ViewComment, name='view_comments'),
+    
+
 ]

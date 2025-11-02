@@ -1,4 +1,21 @@
 {% load static %}
+{% load custom_filters %}
+<style>
+  .author-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+  transition: var(--transition-normal);
+  display: inline-block;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.author-link:hover {
+  color: var(--secondary-color);
+  transform: translateY(-1px);
+}
+</style>
 
 <!-- Main Content -->
 <div class="col-lg-9 col-md-8 ">
@@ -36,7 +53,14 @@
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="text-muted small">
-          <i class="fas fa-user"></i> By {{ post.author.username|upper }}
+          <i class="fas fa-user"></i> By 
+          {% if post.author.get_full_name %}
+            <a href="{% url 'author_profile' post.author.username %}" class="author-link">
+              {{ post.author.get_full_name|upper }}</a>
+          {% else %}
+            <a href="{% url 'author_profile' post.author.username %}" class="author-link">
+              {{ post.author.username|upper }}</a>
+          {% endif %}
         </div>
         <div class="text-muted small">
           <i class="fas fa-clock"></i> {{ post.date_created|date:"M d, Y" }}
@@ -61,16 +85,17 @@
     <div class="card-footer bg-light">
       <div class="d-flex justify-content-between align-items-center">
         <div class="post-actions">
-          <button class="btn btn-sm btn-outline-primary comment-toggle-btn" data-post-id="{{ post.pk }}">
+          <button class="btn btn-sm btn-outline-primary comment-toggle-btn mb-1" data-post-id="{{ post.pk }}">
             <i class="fas fa-comment"></i>
             Comments
             <span class="badge bg-primary ms-1">{{ post.get_comment_count }}</span>
           </button>
           <!-- Like Post -->
-          <button class="comment-action-btn post-like-btn" data-post-id="{{ post.pk }}">
-              <i class="far fa-heart"></i>
+          <button class="post-like-btn {% if liked_by_user|get_item:post.pk %} liked {% endif %}" data-post-id="{{ post.pk }}">
+              <i class="far {% if liked_by_user|get_item:post.pk %} fas {% endif %} fa-heart"></i>
               <span class="like-count">{{ post.likes_count|default:0 }}</span>
           </button>
+          
         </div>
         <div class="post-meta">
           {% if post.date_updated != post.date_created %}
@@ -335,6 +360,7 @@
         })
           .then(response => response.json())
           .then(data => {
+            console.log(data)
             if (data.success) {
               this.classList.toggle('liked');
               const icon = this.querySelector('i');
@@ -349,9 +375,12 @@
               }
               countSpan.textContent = data.likes_count;
             }
-          })
+          }
+          
+          )
           .catch(error => console.error('Error:', error));
       });
+      
     });
 
     // Reply button functionality

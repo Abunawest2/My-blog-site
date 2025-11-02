@@ -1,5 +1,6 @@
 {% extends "main/base.html" %}
 {% load static %}
+{%load socialaccount%}
 {% block title %}Log In - MyBlog{% endblock title %}
 
 {% block css %}
@@ -92,12 +93,12 @@
 
                     <!-- Social Login -->
                     <div class="social-buttons">
-                        <button type="button" class="social-btn social-google">
+                        <a href="{% provider_login_url 'google' %}" class="social-btn social-google">
                             <i class="fab fa-google me-2"></i>Google
-                        </button>
-                        <button type="button" class="social-btn social-github">
+                        </a>
+                        <a href="{% provider_login_url 'github' %}" class="social-btn social-github">
                             <i class="fab fa-github me-2"></i>GitHub
-                        </button>
+                        </a>
                     </div>
 
                     <!-- Sign Up Link -->

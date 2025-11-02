@@ -38,6 +38,42 @@ Home page
 
     <div class="card mt-4">
       <div class="card-header bg-light">
+        <h6 class="card-title mb-0">Recent Posts</h6>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          {% for post in recent_posts %}
+          <li class="list-group-item">
+            <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none text-dark">{{ post.title }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="card-footer text-muted">
+        <small>Read Recent Blogs</small>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header bg-light">
+        <h6 class="card-title mb-0">Popular Posts</h6>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          {% for post in popular_posts %}
+          <li class="list-group-item">
+            <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none text-dark">{{ post.title }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="card-footer text-muted">
+        <small>Read Popular Blogs</small>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <div class="card-header bg-light">
         <h6 class="card-title mb-0">About</h6>
       </div>
       <div class="card-body">

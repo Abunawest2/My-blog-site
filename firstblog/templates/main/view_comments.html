@@ -1,0 +1,18 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Comments - Blog{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Comments for {{ post.title }}</h1>
+
+    {% for comment in comments %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <p class="card-text">{{ comment.text }}</p>
+            <p class="card-text"><small class="text-muted">by {{ comment.author.username }} on {{ comment.date_created }}</small></p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

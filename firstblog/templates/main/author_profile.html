@@ -16,8 +16,26 @@
                     {{ user.username|slice:":2"|upper }}
                 </div>
                 </button>
-                <h4 class="profile-name">{{ author.first_name }} {{ author.last_name }}</h4>
-                <p class="profile-username">@{{ author.username }}</p>
+                {% if author.get_full_name %}
+                    {% if author.get_full_name == author.username %}
+                    <h3 class="profile-fullname">
+                        @ {{ author.get_full_name }}
+                    </h3>
+                    {% else %}
+                    <h3 class="profile-fullname">{{ author.get_full_name }}</h3>
+                    {% endif %}
+                {% else %}
+                <h3 class="profile-fullname">
+                    {% if not author.get_full_name == author.username %}
+                        @
+                    {% endif %}
+                    {{ author.username }}
+                </h3>
+                {% endif %}
+                {% if not author.get_full_name == author.username %}
+                    <p class="profile-username text-muted">@{{ author.username }}</p>
+                {% endif %}
+                
                 <p class="profile-bio">{{ author.bio }}</p>
                 <div class="profile-stats">
                     <div class="stat-item">
@@ -38,7 +56,7 @@
                     {% for related_post in related_posts %}
                         <li class="list-group-item">
                             <a href="{% url 'post_detail' related_post.pk %}">{{ related_post.title }}</a>
-                            <small class="text-muted d-block">By {{ related_post.author.username }}</small>
+                            <small class="text-muted d-block">By {{ related_post.author.get_full_name }}</small>
                         </li>
                     {% endfor %}
                 </ul>
@@ -50,7 +68,7 @@
 
         <div class="col-lg-8 posts-section">
             {% if author.is_staff %}
-                <h2>Posts by {{ author.username }}</h2>
+                <h2>Posts by {{ author.get_full_name|capfirst }}</h2>
                 {% for post in posts %}
                     <div class="card post-card mb-3">
                         <div class="card-body">
@@ -70,7 +88,7 @@
             {% else %}
                 <h2>Profile</h2>
                 <div class="alert alert-light">
-                    <h4 class="alert-heading">Welcome, {{ author.username }}!</h4>
+                    <h4 class="alert-heading">Welcome, {{ author.get_full_name }}!</h4>
                     <p>This is your profile page. You can see your stats and activity here.</p>
                     <hr>
                     <p class="mb-0">Start exploring topics that interest you!</p>

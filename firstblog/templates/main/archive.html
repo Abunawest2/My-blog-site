@@ -1,0 +1,32 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Archive - Blog{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Archive</h1>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="list-group">
+                {% for month in posts_by_month %}
+                <a href="?month={{ month.month|date:'Y-m' }}" class="list-group-item list-group-item-action {% if selected_month == month.month|date:'Y-m' %}active{% endif %}">
+                    {{ month.month|date:"F Y" }} ({{ month.count }})
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-8">
+            {% for post in posts %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    <p class="card-text">{{ post.post|truncatewords:20 }}</p>
+                    <a href="{% url 'post_detail' post.pk %}" class="btn btn-primary">Read More</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

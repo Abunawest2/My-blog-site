@@ -242,7 +242,7 @@ main.container {
 
 /* Focus states for accessibility */
 *:focus {
-  outline: 2px solid var(--secondary-color);
+  /* outline: 2px solid var(--secondary-color); */
   outline-offset: 2px;
 }
 
@@ -255,4 +255,34 @@ main.container {
 ::-moz-selection {
   background: var(--secondary-light);
   color: var(--primary-dark);
+}
+
+.post-like-btn {
+  background: none;
+  border: 2px solid var(--border-light);
+  color: var(--text-medium);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.post-like-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.post-like-btn.liked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-white);
+}
+
+.post-like-btn.liked .fa-heart {
+    color: var(--text-white);
 }
