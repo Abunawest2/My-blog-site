@@ -22,8 +22,8 @@ urlpatterns = [
     path('search/', views.search_posts, name='search_posts'),
     path('category/<str:category_name>/', views.category_posts, name='category_posts'),
     path('author/<path:username>/', views.author_profile, name='author_profile'),
-    path('archive/', views.archive, name='archive'),
-    
+    path('archived-posts/', views.archived_posts_list, name='archived_posts'),
+
     # Comment URLs
     path('post/<int:pk>/comment/', views.add_comment_to_post, name='add_comment_to_post'),
     path('comment/<int:comment_pk>/reply/', views.add_reply_to_comment, name='add_reply_to_comment'),
@@ -35,6 +35,8 @@ urlpatterns = [
     
     # Other Pages
     path('about/', views.about, name='about'),
+    path('contact/', views.contact, name='contact'),
+    path('apply-to-write/', views.author_application_view, name='author_application'),
     
     # Legacy view (optional - for backwards compatibility)
     path('post/<int:pk>/comments/', views.ViewComment, name='view_comments'),

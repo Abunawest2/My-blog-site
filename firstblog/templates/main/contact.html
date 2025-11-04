@@ -1,0 +1,30 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <h1 class="mt-4">Contact Us</h1>
+            <p>Have a question or want to get in touch? Fill out the form below and we'll get back to you as soon as possible.</p>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <h2 class="mt-4 mb-3">Other Ways to Connect</h2>
+            <ul class="list-group">
+                <li class="list-group-item d-flex align-items-center"><a href="https://wa.me/your-whatsapp-number" target="_blank" class="text-decoration-none text-dark"><i class="fab fa-whatsapp me-2"></i> WhatsApp</a></li>
+                <li class="list-group-item d-flex align-items-center"><a href="mailto:contact@yourblog.com" class="text-decoration-none text-dark"><i class="far fa-envelope me-2"></i> Email</a></li>
+                <li class="list-group-item d-flex align-items-center"><a href="https://www.linkedin.com/in/your-profile" target="_blank" class="text-decoration-none text-dark"><i class="fab fa-linkedin me-2"></i> LinkedIn</a></li>
+                <li class="list-group-item d-flex align-items-center"><a href="https://www.facebook.com/your-page" target="_blank" class="text-decoration-none text-dark"><i class="fab fa-facebook me-2"></i> Facebook</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ form.media }}
+{% endblock %}

@@ -212,6 +212,31 @@ main.container {
   border-color: var(--secondary-color) !important;
 }
 
+
+.page-link{
+  color: var(--primary-color);
+  transition: var(--transition-normal);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+}
+
+.page-item{
+  border-radius: var(--radius-md);
+}
+
+.page-item.active .page-link {
+  background-color: var(--primary-color);
+  color: var(--text-white);
+  border: 1px solid var(--primary-color);
+}
+
+.page-link:hover {
+  background-color: var(--primary-color);
+  color: var(--text-white);
+  transition: var(--transition-normal);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+}
 /* Form controls */
 .form-control {
   border: 2px solid var(--input-border);

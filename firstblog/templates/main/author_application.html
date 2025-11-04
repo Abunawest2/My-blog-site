@@ -1,0 +1,25 @@
+{% extends "main/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Author Application" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title">{% trans "Apply to be an Author" %}</h1>
+                    <p>{% trans "Thank you for your interest in becoming an author for our blog. Please fill out the form below." %}</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary">{% trans "Submit Application" %}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

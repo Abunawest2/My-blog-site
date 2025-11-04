@@ -58,12 +58,30 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f"{self.username}"
 
+    @property
+    def is_author(self):
+        return hasattr(self, 'author_profile')
+
+class AuthorProfile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='author_profile')
+    bio = models.TextField(blank=True)
+    website = models.URLField(blank=True)
+    profile_picture = models.ImageField(null=True, blank=True, upload_to='author_profiles/')
+    linkedin_url = models.URLField(blank=True, help_text="Your LinkedIn profile URL")
+    twitter_url = models.URLField(blank=True, help_text="Your Twitter profile URL")
+    facebook_url = models.URLField(blank=True, help_text="Your Facebook profile URL")
+    github_url = models.URLField(blank=True, help_text="Your GitHub profile URL")
+
+    def __str__(self):
+        return f"{self.user.username}'s Author Profile"
+
 class BlogPost(models.Model):
     author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, verbose_name='author')
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='posts')
     title = models.CharField(max_length=100)
     add_image = models.ImageField(null=True, blank=True, upload_to='image/')
     post = models.TextField()
+    status = models.CharField(max_length=10, choices=[('draft', 'Draft'), ('published', 'Published'), ('archived', 'Archived')], default='draft')
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     view_count = models.PositiveIntegerField(
@@ -81,8 +99,6 @@ class BlogPost(models.Model):
     
     def save(self, *args, **kwargs):
         """Override save to add custom behavior if needed"""
-        if self.author and not self.author.is_staff:
-            raise ValueError("Only staff users can create blog posts.")
         return super().save(*args, **kwargs)
     
     def get_comment_count(self):
@@ -196,3 +212,28 @@ class Category(models.Model):
     def post_count(self):
         """Return count of posts in this category"""
         return self.posts.count()
+
+class AuthorApplication(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='author_applications', help_text="The user account if the applicant is already registered.")
+    name = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+    bio = models.TextField(help_text="Tell us about yourself and why you want to be an author.")
+    sample_work_link = models.URLField(help_text="A link to a sample of your writing (e.g., a blog post, article, or portfolio).")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    date_applied = models.DateTimeField(auto_now_add=True)
+    reviewed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_applications')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Author Application"
+        verbose_name_plural = "Author Applications"
+        ordering = ['-date_applied']
+
+    def __str__(self):
+        return f"Application from {self.name} ({self.email})"

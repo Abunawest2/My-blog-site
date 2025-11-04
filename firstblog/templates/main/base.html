@@ -14,6 +14,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <link rel="stylesheet" href="{% static 'css/nav.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tinymce-content.css' %}">
     {% block css %}{% endblock css %}
 </head>
 
@@ -61,6 +62,13 @@
                                 href="{% url 'about' %}">
                                 <i class="fas fa-info-circle"></i>
                                 <span>About</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}"
+                                href="{% url 'contact' %}">
+                                <i class="fas fa-envelope"></i>
+                                <span>Contact</span>
                             </a>
                         </li>
                     </ul>
@@ -123,19 +131,27 @@
                                         <span>Dashboard</span>
                                     </a>
                                 </li>
-                                <li>
-                                    <a class="dropdown-item" href="#">
+                                {% comment %} <li>
+                                    <a class="dropdown-item" href="{% url 'author_profile' user.username %}#settings">
                                         <i class="fas fa-cog"></i>
                                         <span>Settings</span>
                                     </a>
-                                </li>
+                                </li> {% endcomment %}
 
-                                {% if user.is_staff %}
+                                {% if user.is_author %}
                                 <li class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item" href="{% url 'create_post' %}">
                                         <i class="fas fa-plus-circle"></i>
                                         <span>Create Post</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                {% if user.is_staff %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'archived_posts' %}">
+                                        <i class="fas fa-archive"></i>
+                                        <span>Archived Posts</span>
                                     </a>
                                 </li>
                                 <li>
@@ -236,28 +252,26 @@
                         readers.
                     </p>
                     <div class="social-links">
-                        <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-lg"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-lg"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-linkedin fa-lg"></i></a>
+                        <a href="https://twitter.com/your-profile" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="https://facebook.com/your-page" class="text-white me-3"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="https://instagram.com/your-profile" class="text-white me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="https://linkedin.com/in/your-profile" class="text-white"><i class="fab fa-linkedin fa-lg"></i></a>
                     </div>
                 </div>
                 <div class="col-md-2 mb-4">
-                    <h6 class="fw-bold">Explore</h6>
+                    <h6 class="fw-bold">Quick Links</h6>
                     <ul class="list-unstyled">
                         <li><a href="{% url 'home' %}" class="text-white opacity-75 text-decoration-none">Home</a></li>
-                        <li><a href="#" class="text-white opacity-75 text-decoration-none">Categories</a></li>
-                        <li><a href="#" class="text-white opacity-75 text-decoration-none">Popular</a></li>
-                        <li><a href="#" class="text-white opacity-75 text-decoration-none">Recent</a></li>
+                        <li><a href="{% url 'about' %}" class="text-white opacity-75 text-decoration-none">About</a></li>
+                        <li><a href="{% url 'contact' %}" class="text-white opacity-75 text-decoration-none">Contact</a></li>
+
                     </ul>
                 </div>
                 <div class="col-md-2 mb-4">
                     <h6 class="fw-bold">Company</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-white opacity-75 text-decoration-none">About</a></li>
-                        <li><a href="#" class="text-white opacity-75 text-decoration-none">Contact</a></li>
-                        <li><a href="#" class="text-white opacity-75 text-decoration-none">Careers</a></li>
-                        <li><a href="#" class="text-white opacity-75 text-decoration-none">Press</a></li>
+                        <li><a href="{% url 'about' %}" class="text-white opacity-75 text-decoration-none">About</a></li>
+                        <li><a href="{% url 'contact' %}" class="text-white opacity-75 text-decoration-none">Contact</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 mb-4">
@@ -273,7 +287,7 @@
             </div>
             <hr class="my-4 opacity-25">
             <div class="text-center opacity-75">
-                <small>&copy; 2024 MyBlog. All rights reserved.</small>
+                <small>&copy; 2025 MyBlog. All rights reserved.</small>
             </div>
         </div>
     </footer>

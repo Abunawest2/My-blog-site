@@ -1,7 +1,12 @@
 # admin.py - Add this to your existing admin.py
 # from django.contrib.admin import ModelAdmin
-from .models import BlogPost, PostLike, CustomUser, Comment, CommentLike, Category, UserPostView
+from .models import BlogPost, PostLike, CustomUser, Comment, CommentLike, Category, UserPostView, AuthorApplication, AuthorProfile
 from unfold.admin import ModelAdmin
+from django.utils import timezone
+# IMPORT ALLAUTH MODELS
+from allauth.socialaccount.models import SocialApp, SocialAccount, SocialToken
+from allauth.account.models import EmailAddress
+
 from unfold.sites import UnfoldAdminSite as unfold_admin
 from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.forms import UserChangeForm, UserCreationForm, AdminPasswordChangeForm
@@ -11,9 +16,28 @@ from .forms import AdminBlogPostForm
 
 from django.contrib.auth.models import Group
 
-# IMPORT ALLAUTH MODELS
-from allauth.socialaccount.models import SocialApp, SocialAccount, SocialToken
-from allauth.account.models import EmailAddress
+
+class AuthorApplicationAdmin(ModelAdmin):
+    list_display = ['user__username', 'user__email', 'status', 'date_applied']
+    list_filter = ['status', 'date_applied']
+    list_editable = ['status']
+    search_fields = ['name', 'email', 'bio']
+    readonly_fields = ['name', 'email', 'bio', 'sample_work_link', 'date_applied', 'reviewed_by', 'reviewed_at']
+        
+
+    def save_model(self, request, obj, form, change):
+        if 'status' in form.changed_data and obj.status == 'approved':
+            obj.reviewed_by = request.user
+            obj.reviewed_at = timezone.now()
+            if obj.user:
+                AuthorProfile.objects.get_or_create(user=obj.user)
+        super().save_model(request, obj, form, change)
+
+
+class AuthorProfileAdmin(ModelAdmin):
+    list_display = ['user', 'user__email', 'bio', 'website']
+    search_fields = ['user__username', 'bio']
+    date_hierarchy = 'user__date_joined'
 
 class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
     form = UserChangeForm
@@ -43,15 +67,16 @@ class CustomUserAdmin(BaseUserAdmin, ModelAdmin):
 
 class BlogPostAdmin(ModelAdmin):
     form = AdminBlogPostForm
-    list_display = ['id','title', 'category', 'author', 'date_created', 'get_comment_count',
+    list_display = ['id','title', 'status', 'category', 'author', 'date_created', 'get_comment_count',
                     'likes_count', 'view_count']
     list_display_links = ['id', 'title', 'category']
-    list_filter = ['date_created', 'author', ('date_created', RangeDateFilter)]
+    list_filter = ['status', 'date_created', 'author', ('date_created', RangeDateFilter)]
+    list_editable = ['status']
     list_filter_submit = True
     search_fields = ['title', 'post']
     date_hierarchy = 'date_created'
     ordering = ['-view_count', '-date_created']
-    readonly_fields = ['date_created', 'date_updated']
+    readonly_fields = ['view_count', 'date_created', 'date_updated']
 
     # def total_likes(self, obj):
     #     return obj.likes_count
@@ -133,6 +158,8 @@ custom_admin_site.register(CommentLike, CommentLikeAdmin)
 custom_admin_site.register(Category, CategoryAdmin)
 custom_admin_site.register(Group, customGroupAdmin)
 custom_admin_site.register(UserPostView, UserPostViewAdmin)
+custom_admin_site.register(AuthorApplication, AuthorApplicationAdmin)
+custom_admin_site.register(AuthorProfile, AuthorProfileAdmin)
 
 # Allauth Models
 custom_admin_site.register(SocialApp, SocialAppAdmin)

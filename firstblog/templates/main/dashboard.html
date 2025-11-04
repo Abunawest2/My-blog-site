@@ -24,7 +24,7 @@
       <div class="stat-icon purple">
         <i class="fas fa-file-alt"></i>
       </div>
-      {% if user.is_staff %}
+{% if user.is_author %}
         <div class="stat-value">{{ total_posts }}</div>
         <div class="stat-label">Total Posts</div>
     
@@ -51,7 +51,7 @@
       <div class="stat-value">{{ total_comment_likes }}</div>
       <div class="stat-label">Comment Likes Received</div>
     </div>
-    {% if user.is_staff %}
+    {% if user.is_author %}
     <div class="stat-card">
       <div class="stat-icon green">
         <i class="fas fa-heart"></i>
@@ -65,7 +65,7 @@
 
   <!-- My Posts Section -->
 <div class="dashboard-section">
-    {% if not user.is_staff %}
+    {% if not user.is_author %}
     <!-- Recently Viewed Posts for Regular Users -->
     <div class="section-header">
         <h2 class="section-title">

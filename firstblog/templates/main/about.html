@@ -1,0 +1,26 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">About Us</h1>
+
+    <p>Welcome to [Your Blog Name], a growing community of thinkers, innovators, and learners passionate about Technology, Business Administration, and Finance.</p>
+
+    <p>Our mission is to bridge the gap between technology and business strategy — empowering readers with knowledge that inspires innovation, improves decision-making, and drives sustainable growth.</p>
+
+    <p>We believe that learning never stops. Whether you are a student, entrepreneur, or professional, this platform gives you practical insights, industry trends, and thought-provoking ideas that connect technology with real-world applications.</p>
+
+    <h2 class="mt-4">Our Community in Numbers</h2>
+    <ul class="list-group mb-4">
+        <li class="list-group-item">Total Posts: {{ total_posts }}</li>
+        <li class="list-group-item">Total Authors: {{ total_authors }}</li>
+        <li class="list-group-item">Total Comments: {{ total_comments }}</li>
+    </ul>
+    <p>These numbers reflect the vibrant exchange of ideas that continues to grow on our platform.</p>
+
+    <h2 class="mt-4">Join Our Community</h2>
+    <p>We’re always open to new voices and fresh perspectives. If you are passionate about technology, business administration, or finance, we invite you to become a contributing author. Share your expertise, write articles, and help others learn from your experience. Together, we can build a rich library of knowledge that inspires positive change.</p>
+
+    <p>📩 Interested? Get in touch with us via the <a href="{% url 'contact' %}">Contact page</a> or email us at <a href="mailto:contact@yourblog.com">contact@yourblog.com</a> to start your author journey today!</p>
+</div>
+{% endblock %}

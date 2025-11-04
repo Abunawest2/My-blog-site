@@ -82,6 +82,7 @@ Author Profile Page Styles
     padding-bottom: var(--space-sm);
 }
 
+
 .post-card {
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -160,4 +161,58 @@ Author Profile Page Styles
     .posts-section h2 {
         font-size: 1.75rem;
     }
+
+    .posts-section{
+        margin-top: var(--space-xl);
+    }
+
+    ul.nav-tabs{
+        margin-bottom: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+
+}
+
+/* Tab Navigation */
+
+.nav-tabs .nav-item .nav-link {
+    color: var(--primary-color);
+    border-bottom-color: transparent; 
+    transition: var(--transition-fast);
+    font-weight: var(--font-weight-medium);
+}
+
+.nav-tabs .nav-item .nav-link {
+    color: var(--primary-color);
+    border-bottom-color: transparent; 
+    transition: var(--transition-fast);
+    font-weight: var(--font-weight-medium);
+}
+
+
+.nav-tabs .nav-item .nav-link:hover:not(.active) {
+    color: var(--text-white);
+    background-color: var(--primary-light);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    font-weight: var(--font-weight-semibold);
+}
+
+.nav-tabs .nav-item .nav-link.active {
+    color: var(--text-white);
+    background-color: var(--primary-color);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Tab Content */
+.tab-content {
+    border-top: none; 
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+
+form{
+    box-shadow: none;
 }

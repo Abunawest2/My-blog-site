@@ -6,6 +6,7 @@
 ### Completed Features ✓
 
 - User authentication (signup, login, logout with custom user model)
+- Social authentication setup (Google/GitHub via django-allauth)
 - Blog post CRUD operations (create, read, update, delete) - staff only
 - Rich text editor integration (TinyMCE)
 - Image upload and handling
@@ -13,355 +14,191 @@
 - Nested comments system (comments + replies)
 - Post and comment likes
 - Search functionality (basic + advanced)
-- Author profiles with statistics
+- Author profiles with statistics and user settings
 - User dashboard (different views for staff/regular users)
 - View tracking and analytics
 - Archive view (posts by month)
 - Pagination throughout
 - Responsive UI (Bootstrap 5, custom CSS)
 - Admin panel (django-unfold)
-- Social authentication setup (Google/GitHub via django-allauth)
+- Functional contact page and about page
 
-### Critical Issues to Address
+### Pending Tasks & Critical Issues
 
-1. **Production Security**: DEBUG=True, hardcoded SECRET_KEY, database credentials in settings
-2. **Missing Templates**: `about.html` template referenced but doesn't exist
-3. **No Testing**: Empty `tests.py` file
-4. **Incomplete Features**: Several UI elements link to non-existent pages (#)
-
----
-
-## Priority 1: Critical Fixes & Missing Core Features
-
-### 1.1 Create Missing About Page Template
-
-- **File**: `firstblog/templates/main/about.html`
-- **Status**: View exists but template missing
-- **Action**: Create template displaying site statistics (total posts, authors, comments)
-- **Reference**: `firstblog/views.py:493-505`
-
-### 1.2 User Settings/Profile Edit Functionality
-
-- **Files**: `firstblog/views.py`, `firstblog/forms.py`, `firstblog/url.py`, new template
-- **Status**: Settings link in navbar points to `#`
-- **Action**: 
-- Create `UserSettingsForm` in `forms.py` (username, email, first_name, last_name, password change)
-- Add `edit_profile` and `change_password` views
-- Add URL routes
-- Create `settings.html` template
-- **Reference**: `firstblog/templates/main/base.html:127`
-
-### 1.3 Password Reset Functionality
-
-- **Files**: `firstblog/views.py`, `firstblog/url.py`, templates
-- **Status**: "Forgot password?" link exists but non-functional
-- **Action**: Implement Django password reset views with custom templates
-- **Reference**: `firstblog/templates/main/login.html:79`
-
-### 1.4 Comment Edit Functionality
-
-- **Files**: `firstblog/views.py`, `firstblog/url.py`, `firstblog/forms.py`
-- **Status**: Users can delete but not edit comments
-- **Action**: Add edit comment view and form, update templates
+1.  **`DEBUG=True` in Production**: The `.env` file still has `DEBUG=True`, which is a security risk in production.
+2.  **No Testing**: The `firstblog/tests.py` file is empty.
+3.  **Incomplete Features**: Several UI elements link to non-existent pages (`#`), such as the notifications bell and newsletter subscription.
+4.  **Password Reset**: The "Forgot password?" link is not functional.
+5.  **Comment Editing**: Users can can delete but not edit their comments.
 
 ---
 
-## Priority 2: Production Readiness
+## Priority 1: Critical Fixes & Production Readiness
 
-### 2.1 Security Hardening
+### 1.1 Security Hardening & Environment Configuration ✓
 
-- **File**: `blogproject/settings.py`
-- **Actions**:
-- Move SECRET_KEY to environment variable
-- Move database credentials to environment variables
-- Set DEBUG=False for production
-- Configure proper ALLOWED_HOSTS
-- Add SECURE_SSL_REDIRECT, SESSION_COOKIE_SECURE, CSRF_COOKIE_SECURE
-- Configure SECURE_HSTS settings
+- **Files**: `blogproject/settings.py`, `.env`, `.gitignore`
+- **Status**: `SECRET_KEY` and database credentials are now loaded from environment variables. `.env` is added to `.gitignore`. `ALLOWED_HOSTS` is configured, and production security settings (`SECURE_SSL_REDIRECT`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, HSTS) are added.
+- **Actions**: (Completed)
 
-### 2.2 Environment Configuration
+### 1.2 Implement Password Reset Functionality ✓
 
-- **Files**: New `.env` file, `blogproject/settings.py`, `.gitignore`
-- **Actions**:
-- Create `.env` file for environment variables
-- Install `python-decouple` or `django-environ`
-- Update settings.py to read from environment
-- Update `.gitignore` to exclude `.env`
+- **Files**: `firstblog/templates/registration/`
+- **Status**: Completed. The password reset functionality is implemented using `django-allauth`. Custom templates for the password reset flow have been created.
+- **Action**: (Completed)
 
-### 2.3 Email Configuration
+### 1.3 Add Comment Edit Functionality
 
-- **File**: `blogproject/settings.py`
-- **Status**: Currently using console backend
-- **Actions**:
-- Configure SMTP email backend for production (Gmail/SendGrid/etc.)
-- Set EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD
-- Test email sending functionality
+- **Files**: `firstblog/views.py`, `firstblog/url.py`, `firstblog/forms.py`, templates
+- **Status**: Users can delete but not edit comments.
+- **Action**:
+    - Create a `CommentEditForm`.
+    - Add an `edit_comment` view and URL route.
+    - Update comment templates to include an "Edit" button and modal/inline form for editing.
 
-### 2.4 Static Files & Media Configuration
+### 1.4 Configure Production Email Backend ✓
 
-- **File**: `blogproject/settings.py`
-- **Actions**:
-- Configure STATIC_ROOT for production
-- Set up static files collection
-- Configure media files serving (CDN or proper storage)
+- **Files**: `blogproject/settings.py`, `.env`
+- **Status**: Completed. The email backend is now configured to use SMTP for production (when `DEBUG=False`) and the console for development. The necessary settings have been added to `.env` with placeholders.
+- **Action**: (Completed)
 
 ---
 
-## Priority 3: Missing Feature Implementation
+## Priority 2: Missing Feature Implementation
 
-### 3.1 Contact Page
+### 2.1 Implement Notification System
 
-- **Files**: New `contact.html`, `firstblog/views.py`, `firstblog/url.py`, `firstblog/forms.py`
-- **Status**: Footer link exists but page missing
+- **Files**: `firstblog/models.py`, `firstblog/views.py`, templates
+- **Status**: UI exists in the navbar but has no backend functionality.
 - **Actions**:
-- Create ContactForm
-- Add contact view
-- Create contact template
-- Add email sending on form submission
-- **Reference**: `firstblog/templates/main/base.html:258`
-
-### 3.2 Notification System Backend
-
-- **Files**: New `firstblog/models.py` (Notification model), `firstblog/views.py`, templates
-- **Status**: UI exists but no backend
-- **Actions**:
-- Create Notification model (user, type, message, read, created_at)
-- Add notification views (mark as read, list notifications)
-- Update navbar to show notification count
-- Create notification dropdown template
+    - Create a `Notification` model (`user`, `message`, `link`, `read`, `timestamp`).
+    - Create signals to generate notifications (e.g., on new comment, reply, or like).
+    - Add views to fetch and mark notifications as read.
+    - Create the notification dropdown template.
 - **Reference**: `firstblog/templates/main/base.html:90-96`
 
-### 3.3 Newsletter Subscription
+### 2.2 Implement Newsletter Subscription
 
-- **Files**: New `firstblog/models.py` (Subscriber model), `firstblog/views.py`, `firstblog/forms.py`
-- **Status**: Footer form exists but no backend
+- **Files**: `firstblog/models.py`, `firstblog/views.py`, `firstblog/forms.py`
+- **Status**: Footer form exists but has no backend functionality.
 - **Actions**:
-- Create Subscriber model (email, subscribed_at, is_active)
-- Add subscription view and form
-- Implement unsubscribe functionality
-- Update footer form to be functional
+    - Create a `Subscriber` model (`email`, `is_active`, `subscribed_at`).
+    - Create a `SubscriptionForm`.
+    - Add a view to handle form submission, validate, and save the subscriber.
+    - Implement a confirmation email and an unsubscribe mechanism.
 - **Reference**: `firstblog/templates/main/base.html:264-271`
 
-### 3.4 User Avatar/Profile Picture
+### 2.3 Add User Avatar/Profile Picture
 
 - **Files**: `firstblog/models.py`, `firstblog/forms.py`, `firstblog/views.py`, templates
 - **Actions**:
-- Add `avatar` ImageField to CustomUser model (migration needed)
-- Update user settings form to include avatar upload
-- Update templates to display avatars
-- Add default avatar fallback
+    - Add an `avatar` `ImageField` to the `CustomUser` model (requires a migration).
+    - Update `UserSettingsForm` to include the avatar upload field.
+    - Modify templates (`base.html`, `author_profile.html`) to display the user's avatar, with a fallback to the current initial-based display.
 
-### 3.5 Post Drafts & Scheduling
+---
+
+## Priority 3: Testing & Quality Assurance
+
+### 3.1 Write Unit & Integration Tests
+
+- **File**: `firstblog/tests.py`
+- **Status**: Currently empty.
+- **Actions**:
+    - Write tests for user authentication flows.
+    - Test all blog post and comment CRUD operations.
+    - Test like/unlike functionality for posts and comments.
+    - Test search, filtering, and pagination.
+    - Verify permissions for staff vs. regular users.
+
+### 3.2 Create Custom Error Pages
+
+- **Files**: `firstblog/views.py`, new templates in `templates/`
+- **Actions**:
+    - Create templates for `404.html`, `500.html`, and `403.html`.
+    - Configure `handler404`, `handler500`, and `handler403` in the root `urls.py`.
+
+### 3.3 Improve AJAX Feedback & Error Handling
+
+- **Files**: Templates and static JavaScript files.
+- **Actions**:
+    - Add loading spinners or visual feedback for AJAX operations (likes, comments).
+    - Display more user-friendly error messages from AJAX responses.
+
+---
+
+## Priority 4: Enhancements & Polish
+
+### 4.1 Fix Placeholder Links in Footer
+
+- **File**: `firstblog/templates/main/base.html`
+- **Status**: Multiple `href="#"` links in the footer.
+- **Actions**:
+    - Link social media icons to actual social profiles or remove them.
+- **Reference**: `firstblog/templates/main/base.html:239-260`
+
+### 4.2 Implement Post Drafts & Scheduling
 
 - **Files**: `firstblog/models.py`, `firstblog/views.py`, `firstblog/admin.py`
 - **Actions**:
-- Add `status` field to BlogPost (draft, published, scheduled)
-- Add `publish_date` field for scheduling
-- Update views to filter published posts only
-- Add draft management in admin/dashboard
+    - Add a `status` field to `BlogPost` model (e.g., 'draft', 'published').
+    - Add a `publish_date` field for scheduling posts.
+    - Update views to filter for published posts only.
+    - Enhance the user dashboard for staff to manage drafts.
+
+### 4.3 Add SEO Improvements
+
+- **Files**: Templates (`base.html`, `post_detail.html`)
+- **Actions**:
+    - Add meta descriptions and keywords.
+    - Implement Open Graph meta tags for better social sharing.
+    - Create a `sitemap.xml` and `robots.txt`.
 
 ---
 
-## Priority 4: Testing & Quality Assurance
+## Priority 5: Documentation & Deployment
 
-### 4.1 Unit Tests
+### 5.1 Write Code Documentation
 
-- **File**: `firstblog/tests.py`
-- **Status**: Currently empty
+- **Files**: All Python files.
+- **Actions**: Add docstrings to all models, views, forms, and functions to explain their purpose.
+
+### 5.2 Create a Comprehensive README.md
+
+- **File**: `README.md` (to be created)
+- **Actions**: Document the project setup, installation steps, environment variable configuration, and deployment instructions.
+
+### 5.3 Configure for Production Deployment
+
+- **Files**: `blogproject/settings.py`, new deployment-specific files.
 - **Actions**:
-- Test user authentication (signup, login, logout)
-- Test blog post CRUD operations
-- Test comment system
-- Test like functionality
-- Test search and filtering
-- Test permissions (staff vs regular users)
-
-### 4.2 Integration Tests
-
-- **Files**: New test files
-- **Actions**:
-- Test full user workflows
-- Test pagination
-- Test form validations
-- Test AJAX endpoints (likes)
-
-### 4.3 Error Handling Improvements
-
-- **Files**: `firstblog/views.py`, templates
-- **Actions**:
-- Add try-except blocks where needed
-- Create custom error pages (404, 500, 403)
-- Add proper error messages
-- Handle edge cases (empty search results, etc.)
-
----
-
-## Priority 5: Performance & Optimization
-
-### 5.1 Database Query Optimization
-
-- **Files**: `firstblog/views.py`
-- **Actions**:
-- Review and optimize N+1 queries
-- Add database indexes where needed
-- Use `select_related` and `prefetch_related` consistently
-
-### 5.2 Caching Implementation
-
-- **Files**: `blogproject/settings.py`, `firstblog/views.py`
-- **Actions**:
-- Set up Redis or Memcached
-- Cache frequently accessed data (categories, popular posts)
-- Implement view caching for static pages
-
-### 5.3 Image Optimization
-
-- **Files**: `firstblog/models.py`, `firstblog/forms.py`
-- **Actions**:
-- Add image resizing on upload (Pillow)
-- Create thumbnails for post images
-- Optimize image formats (WebP support)
-
----
-
-## Priority 6: Additional Features & Enhancements
-
-### 6.1 RSS Feed
-
-- **Files**: New `firstblog/feeds.py`, `firstblog/url.py`
-- **Actions**:
-- Create Django syndication feed
-- Add RSS feed URL route
-- Add RSS link to templates
-
-### 6.2 Social Sharing Buttons
-
-- **Files**: Templates (post_detail.html, index.html)
-- **Actions**:
-- Add share buttons (Twitter, Facebook, LinkedIn)
-- Implement Open Graph meta tags for better sharing
-
-### 6.3 SEO Improvements
-
-- **Files**: Templates (base.html, post_detail.html)
-- **Actions**:
-- Add meta descriptions
-- Add Open Graph tags
-- Add structured data (JSON-LD)
-- Create sitemap.xml
-- Add robots.txt
-
-### 6.4 API Endpoints (Optional)
-
-- **Files**: New `firstblog/api/` directory, install DRF
-- **Actions**:
-- Set up Django REST Framework
-- Create API endpoints for posts, comments
-- Add API authentication
-
-### 6.5 Tag System (Enhancement)
-
-- **Files**: `firstblog/models.py`, `firstblog/views.py`, templates
-- **Actions**:
-- Add Tag model (many-to-many with BlogPost)
-- Update post creation form
-- Add tag filtering to search
-
-### 6.6 Post Bookmarks/Favorites
-
-- **Files**: `firstblog/models.py`, `firstblog/views.py`
-- **Actions**:
-- Create Bookmark model
-- Add bookmark/unbookmark views
-- Display bookmarks in dashboard
-
----
-
-## Priority 7: UI/UX Polish
-
-### 7.1 Fix Placeholder Links
-
-- **Files**: `firstblog/templates/main/base.html`
-- **Status**: Multiple `href="#"` links in footer
-- **Actions**: 
-- Link "Categories" to category list
-- Link "Popular" to popular posts view
-- Link "Recent" to recent posts view
-- Link social media icons (or remove if not needed)
-- **Reference**: `firstblog/templates/main/base.html:239-260`
-
-### 7.2 Improve Error Messages
-
-- **Files**: Templates, `firstblog/views.py`
-- **Actions**: Make error messages more user-friendly and actionable
-
-### 7.3 Loading States & AJAX Feedback
-
-- **Files**: Templates, static JavaScript
-- **Actions**: Add loading spinners for AJAX operations (likes, comments)
-
----
-
-## Priority 8: Documentation & Deployment
-
-### 8.1 Code Documentation
-
-- **Files**: All Python files
-- **Actions**: Add docstrings to all functions and classes
-
-### 8.2 README.md
-
-- **Files**: New `README.md`
-- **Actions**: Document setup, installation, deployment instructions
-
-### 8.3 Deployment Configuration
-
-- **Files**: New files for deployment
-- **Actions**:
-- Create `requirements.txt` (already exists, verify completeness)
-- Create `Procfile` (if using Heroku)
-- Set up deployment scripts
-- Configure production database (PostgreSQL recommended)
-
-### 8.4 Environment Setup Script
-
-- **Files**: New setup script
-- **Actions**: Create script to set up development environment easily
+    - Configure `STATIC_ROOT` and run `collectstatic`.
+    - Set up a production-grade database (e.g., PostgreSQL).
+    - Create a `Procfile` or other necessary files for the chosen hosting platform (e.g., Heroku, Vercel).
 
 ---
 
 ## Implementation Order Recommendation
 
-1. **Week 1**: Priority 1 items (Critical fixes)
+1.  **Week 1**: Priority 1 (Critical Fixes & Production Readiness)
+    - Security Hardening & Environment Variables.
+    - Password Reset.
+    - Comment Editing.
+    - Production Email.
 
-- About page template
-- User settings
-- Password reset
-- Comment editing
+2.  **Week 2**: Priority 2 (Missing Features)
+    - Notification System.
+    - Newsletter Subscription.
+    - User Avatars.
 
-2. **Week 2**: Priority 2 items (Production readiness)
+3.  **Week 3**: Priority 3 (Testing & QA)
+    - Write comprehensive tests.
+    - Create custom error pages.
 
-- Security hardening
-- Environment configuration
-- Email setup
-
-3. **Week 3**: Priority 3 items (Missing features)
-
-- Contact page
-- Notifications backend
-- Newsletter subscription
-
-4. **Week 4**: Priority 4 items (Testing)
-
-- Write comprehensive tests
-- Error handling improvements
-
-5. **Week 5+**: Priorities 5-8 (Enhancements)
-
-- Performance optimization
-- Additional features
-- Documentation
-- Deployment prep
+4.  **Week 4+**: Priorities 4 & 5 (Enhancements, Documentation, Deployment)
+    - Fix placeholder links.
+    - Add remaining features and polish.
+    - Write documentation and prepare for deployment.
 
 ---
 
@@ -369,19 +206,16 @@
 
 ### Must Create:
 
-- `firstblog/templates/main/about.html`
-- `firstblog/templates/main/settings.html`
-- `firstblog/templates/main/contact.html`
-- `firstblog/templates/registration/password_reset_*.html`
-- `.env` (with example)
+- `firstblog/templates/registration/password_reset_*.html` (multiple files)
 - `README.md`
+- `templates/404.html`, `templates/500.html`, `templates/403.html`
 
 ### Must Modify:
 
-- `blogproject/settings.py` (security, environment variables)
-- `firstblog/views.py` (add new views)
-- `firstblog/forms.py` (add new forms)
-- `firstblog/url.py` (add new routes)
-- `firstblog/models.py` (if adding new models)
-- `firstblog/templates/main/base.html` (fix links)
+- `blogproject/settings.py` (for security, env vars, email)
+- `firstblog/views.py` (for new features and views)
+- `firstblog/forms.py` (for new forms)
+- `firstblog/url.py` (for new routes)
+- `firstblog/models.py` (for new models/fields)
+- `firstblog/templates/main/base.html` (fix links, add avatar logic)
 - `firstblog/tests.py` (add tests)

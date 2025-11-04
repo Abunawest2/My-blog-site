@@ -7,14 +7,48 @@ from django.contrib import messages
 from django.db.models import Count, Q
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
-from .forms import UserForm, BlogPostForm
+
+from blogproject import settings
+from .forms import UserForm, BlogPostForm, ContactForm, UserSettingsForm, ChangePasswordForm, AuthorApplicationForm
+
+from django.contrib.auth import update_session_auth_hash
+from django.core.mail import send_mail, EmailMessage
+
+# ... existing views ...
+
+def contact(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            message = form.cleaned_data['message']
+
+            subject = f"Contact Form Submission from {name}"
+            body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+            
+            email_message = EmailMessage(
+                subject,
+                body,
+                settings.DEFAULT_FROM_EMAIL, # From
+                [settings.CONTACT_FORM_RECIPIENT_EMAIL], # To
+                reply_to=[email], # Set the Reply-To header
+            )
+            email_message.send(fail_silently=False)
+
+            messages.success(request, 'Your message has been sent successfully!')
+            return redirect('contact')
+    else:
+        form = ContactForm()
+
+    return render(request, 'main/contact.html', {'form': form})
 from .models import BlogPost, PostLike, CustomUser, UserPostView, Comment, CommentLike, Category
 from django.db.models import F
 
 
-# Utility function to check if user is staff
-def is_staff_user(user):
-    return user.is_authenticated and user.is_staff
+# Utility function to check if user is an author
+def is_author(user):
+    return user.is_authenticated and hasattr(user, 'author_profile')
 
 
 # Authentication Views
@@ -75,7 +109,7 @@ def logout_view(request):
 # Home View
 def home(request):
     """Display all blog posts with comments and search functionality"""
-    posts_list = BlogPost.objects.select_related('author').prefetch_related(
+    posts_list = BlogPost.objects.filter(status='published').select_related('author').prefetch_related(
         'comments__author',
         'comments__replies__author',
         'comments__likes',
@@ -107,10 +141,10 @@ def home(request):
     categories = Category.objects.all()
     
     # Get recent posts for sidebar
-    recent_posts = BlogPost.objects.order_by('-date_created')[:5]
+    recent_posts = BlogPost.objects.filter(status='published').order_by('-date_created')[:5]
 
     # Get popular posts for sidebar
-    popular_posts = BlogPost.objects.annotate(like_count=Count('post_likes'),popularity_score=F('view_count') + Count('post_likes') * 10).order_by('-popularity_score')[:5]
+    popular_posts = BlogPost.objects.filter(status='published').annotate(like_count=Count('post_likes'),popularity_score=F('view_count') + Count('post_likes') * 10).order_by('-popularity_score')[:5]
 
     context = {
         'posts': posts,
@@ -127,14 +161,12 @@ def home(request):
 # Single Post View
 def post_detail(request, pk):
     """Display a single blog post with all its comments"""
-    post = get_object_or_404(
-        BlogPost.objects.select_related('author').prefetch_related(
-            'comments__author',
-            'comments__replies__author',
-            'comments__likes'
-        ),
-        pk=pk
-    )
+    post = get_object_or_404(BlogPost, pk=pk)
+
+    if (post.status == 'draft' and post.author != request.user and not request.user.is_staff) or \
+       (post.status == 'archived' and not (request.user == post.author or request.user.is_superuser)):
+        messages.error(request, "You do not have permission to view this post.")
+        return redirect('home')
 
     # Increment view count and track user view
     post.increment_view_count(request.user)
@@ -163,7 +195,7 @@ def search_posts(request):
     author_filter = request.GET.get('author', '')
     sort_by = request.GET.get('sort', '-date_created')
     
-    posts_list = BlogPost.objects.select_related('author').prefetch_related('comments')
+    posts_list = BlogPost.objects.filter(status='published').select_related('author').prefetch_related('comments')
     
     # Apply search filter
     if search_query:
@@ -211,28 +243,67 @@ def search_posts(request):
 
 
 # Author Profile View
+from .forms import UserForm, BlogPostForm, ContactForm, UserSettingsForm, ChangePasswordForm, AuthorApplicationForm, AuthorProfileForm
+from .models import AuthorProfile
+
+# ... existing views ...
+
+@login_required
 def author_profile(request, username):
-    """Display author profile with their posts"""
     author = get_object_or_404(CustomUser, username=username)
-    
-    posts_list = BlogPost.objects.filter(author=author).order_by('-date_created')
-    
-    # Pagination
+    author_profile_instance = getattr(author, 'author_profile', None)
+
+    if request.method == 'POST' and request.user == author:
+        form_type = request.POST.get('form_type')
+        if form_type == 'user_settings':
+            user_form = UserSettingsForm(request.POST, instance=author)
+            password_form = ChangePasswordForm(author)
+            author_profile_form = AuthorProfileForm(instance=author_profile_instance) if author_profile_instance else None
+            if user_form.is_valid():
+                user_form.save()
+                messages.success(request, 'Your profile has been updated successfully!')
+                return redirect('author_profile', username=author.username)
+        elif form_type == 'change_password':
+            user_form = UserSettingsForm(instance=author)
+            password_form = ChangePasswordForm(author, request.POST)
+            author_profile_form = AuthorProfileForm(instance=author_profile_instance) if author_profile_instance else None
+            if password_form.is_valid():
+                user = password_form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, 'Your password was successfully updated!')
+                return redirect('author_profile', username=author.username)
+        elif form_type == 'author_profile' and author_profile_instance:
+            user_form = UserSettingsForm(instance=author)
+            password_form = ChangePasswordForm(author)
+            author_profile_form = AuthorProfileForm(request.POST, request.FILES, instance=author_profile_instance)
+            if author_profile_form.is_valid():
+                author_profile_form.save()
+                messages.success(request, 'Your author profile has been updated successfully!')
+                return redirect('author_profile', username=author.username)
+        else:
+            # Fallback for GET or invalid form_type
+            user_form = UserSettingsForm(instance=author)
+            password_form = ChangePasswordForm(author)
+            author_profile_form = AuthorProfileForm(instance=author_profile_instance) if author_profile_instance else None
+    else:
+        # GET request
+        user_form = UserSettingsForm(instance=author)
+        password_form = ChangePasswordForm(author)
+        author_profile_form = AuthorProfileForm(instance=author_profile_instance) if author_profile_instance else None
+
+    posts_list = BlogPost.objects.filter(author=author).exclude(status='archived')
+    if request.user != author:
+        posts_list = posts_list.filter(status='published')
+    posts_list = posts_list.order_by('-date_created')
     paginator = Paginator(posts_list, 10)
     page_number = request.GET.get('page')
     posts = paginator.get_page(page_number)
-    
-    # Get statistics
     total_posts = posts_list.count()
     total_comments = Comment.objects.filter(post__author=author).count()
-    
-    # Get related posts (from the same categories as the author's posts)
     author_categories = Category.objects.filter(posts__author=author).distinct()
     related_posts = BlogPost.objects.filter(category__in=author_categories).exclude(author=author).distinct().order_by('-date_created')[:5]
-
-    # For non-staff users, suggest topics based on their activity
     suggested_topics = None
-    if not author.is_staff:
+    if not author.is_author:
         liked_posts_categories = Category.objects.filter(posts__post_likes__user=author).distinct()
         commented_posts_categories = Category.objects.filter(posts__comments__author=author).distinct()
         suggested_topics = (liked_posts_categories | commented_posts_categories).distinct()
@@ -244,6 +315,9 @@ def author_profile(request, username):
         'total_comments': total_comments,
         'related_posts': related_posts,
         'suggested_topics': suggested_topics,
+        'user_form': user_form,
+        'password_form': password_form,
+        'author_profile_form': author_profile_form,
     }
     return render(request, 'main/author_profile.html', context)
 
@@ -254,7 +328,7 @@ def category_posts(request, category_name):
     category = get_object_or_404(Category, name=category_name)
     
     posts_list = BlogPost.objects.filter(
-        category=category
+        category=category, status='published'
     ).select_related('author').order_by('-date_created')
     
     # Pagination
@@ -297,7 +371,7 @@ def toggle_post_like(request, post_pk):
     })
 # Blog Post Views
 @login_required
-@user_passes_test(is_staff_user, login_url='home')
+@user_passes_test(is_author, login_url='home')
 def create_post(request):
     categories = Category.objects.all()
     if request.method == 'POST':
@@ -305,8 +379,13 @@ def create_post(request):
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
+            if request.user.is_staff:
+                post.status = 'published'
+                messages.success(request, 'Post created and published successfully!')
+            else:
+                post.status = 'draft'
+                messages.success(request, 'Post submitted for review successfully!')
             post.save()
-            messages.success(request, 'Post created successfully!')
             return redirect('post_detail', pk=post.pk)
         else:
             messages.error(request, 'Please correct the errors below.')
@@ -317,9 +396,17 @@ def create_post(request):
 
 
 @login_required
-@user_passes_test(is_staff_user, login_url='home')
 def update_post(request, pk):
     post = get_object_or_404(BlogPost, id=pk)
+    
+    if not (
+        request.user.is_superuser or 
+        request.user == post.author or 
+        (request.user.is_staff and not post.author.is_staff)
+    ):
+        messages.error(request, "You do not have permission to edit this post.")
+        return redirect('post_detail', pk=post.pk)
+
     categories = Category.objects.all()
     
     if request.method == 'POST':
@@ -337,14 +424,18 @@ def update_post(request, pk):
 
 
 @login_required
-@user_passes_test(is_staff_user, login_url='home')
 def delete_post(request, pk):
     post = get_object_or_404(BlogPost, pk=pk)
     
+    if not (request.user == post.author or request.user.is_superuser):
+        messages.error(request, "You do not have permission to delete this post.")
+        return redirect('post_detail', pk=post.pk)
+
     if request.method == 'POST':
         post_title = post.title
-        post.delete()
-        messages.success(request, f'Post "{post_title}" has been deleted successfully!')
+        post.status = 'archived'
+        post.save()
+        messages.success(request, f'Post "{post_title}" has been archived successfully!')
         return redirect('home')
     
     return render(request, 'main/delete_post.html', {'post': post})
@@ -407,11 +498,27 @@ def delete_comment(request, comment_pk):
         comment.delete()
         messages.success(request, 'Comment deleted successfully!')
     else:
-        messages.error(request, 'You do not have permission to delete this comment.')
-    
-    # Redirect to the referring page
     next_url = request.POST.get('next', request.META.get('HTTP_REFERER', 'home'))
     return redirect(next_url)
+
+
+@login_required
+@require_POST
+def update_comment(request, comment_pk):
+    """Update an existing comment (AJAX endpoint)."""
+    comment = get_object_or_404(Comment, pk=comment_pk)
+    
+    if request.user != comment.author:
+        return JsonResponse({'success': False, 'error': 'You do not have permission to edit this comment.'}, status=403)
+    
+    new_text = request.POST.get('text', '').strip()
+    if not new_text:
+        return JsonResponse({'success': False, 'error': 'Comment text cannot be empty.'}, status=400)
+    
+    comment.text = new_text
+    comment.save()
+    
+    return JsonResponse({'success': True, 'new_text': comment.text})
 
 
 @login_required
@@ -446,18 +553,17 @@ def user_dashboard(request):
     """Display user's own posts, comments, and viewing statistics"""
     user = request.user
     
-    if user.is_staff:
-        # Staff user data
-        user_posts = BlogPost.objects.filter(author=user).order_by('-date_created')
+    if user.is_author:
+        # Author user data
+        user_posts = BlogPost.objects.filter(author=user).exclude(status='archived').order_by('-date_created')
         total_posts = user_posts.count()
-        total_post_likes = CommentLike.objects.filter(comment__author=user).count()  # This seems incorrect, but keeping your logic
+        total_post_likes = PostLike.objects.filter(post__author=user).count()
         
         # Pagination for posts
         paginator = Paginator(user_posts, 5)
         page_number = request.GET.get('page')
         posts = paginator.get_page(page_number)
         
-        # For staff users, recently_viewed will be None
         recently_viewed = None
     else:
         # Regular user data - viewing statistics
@@ -494,7 +600,7 @@ def about(request):
     """Display about page"""
     # Get some statistics
     total_posts = BlogPost.objects.count()
-    total_authors = CustomUser.objects.filter(posts__isnull=False).distinct().count()
+    total_authors = CustomUser.objects.filter(blogpost__isnull=False).distinct().count()
     total_comments = Comment.objects.count()
     
     context = {
@@ -504,47 +610,6 @@ def about(request):
     }
     return render(request, 'main/about.html', context)
 
-
-# Archive View
-def archive(request):
-    """Display posts by month/year"""
-    from django.db.models.functions import TruncMonth
-    
-    # Get posts grouped by month
-    posts_by_month = BlogPost.objects.annotate(
-        month=TruncMonth('date_created')
-    ).values('month').annotate(
-        count=Count('id')
-    ).order_by('-month')
-    
-    # Get selected month if provided
-    selected_month = request.GET.get('month')
-    posts_list = BlogPost.objects.all()
-    
-    if selected_month:
-        try:
-            from datetime import datetime
-            date_obj = datetime.strptime(selected_month, '%Y-%m')
-            posts_list = posts_list.filter(
-                date_created__year=date_obj.year,
-                date_created__month=date_obj.month
-            )
-        except ValueError:
-            pass
-    
-    posts_list = posts_list.order_by('-date_created')
-    
-    # Pagination
-    paginator = Paginator(posts_list, 10)
-    page_number = request.GET.get('page')
-    posts = paginator.get_page(page_number)
-    
-    context = {
-        'posts': posts,
-        'posts_by_month': posts_by_month,
-        'selected_month': selected_month,
-    }
-    return render(request, 'main/archive.html', context)
 
 
 # Legacy view - keeping for backwards compatibility
@@ -558,3 +623,49 @@ def ViewComment(request, pk):
         'comments': comments
     }
     return render(request, 'main/view_comments.html', context)
+
+
+# Author Application View
+def author_application_view(request):
+    if request.user.is_authenticated:
+        # Check if the user already has a pending or approved application
+        if hasattr(request.user, 'author_applications') and request.user.author_applications.filter(status__in=['pending', 'approved']).exists():
+            messages.info(request, 'You have already submitted an application.')
+            return redirect('home')
+        
+        initial_data = {'name': request.user.get_full_name, 'email': request.user.email}
+    else:
+        initial_data = None
+
+    if request.method == 'POST':
+        form = AuthorApplicationForm(request.POST)
+        if form.is_valid():
+            application = form.save(commit=False)
+            if request.user.is_authenticated:
+                application.user = request.user
+            application.save()
+            messages.success(request, 'Your application has been submitted successfully! We will review it and get back to you soon.')
+            return redirect('home')
+    else:
+        form = AuthorApplicationForm(initial=initial_data)
+        if request.user.is_authenticated:
+            form.fields['name'].widget.attrs['readonly'] = True
+            form.fields['email'].widget.attrs['readonly'] = True
+
+    return render(request, 'main/author_application.html', {'form': form})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def archived_posts_list(request):
+    """Display a list of all archived posts for staff review."""
+    archived_posts = BlogPost.objects.filter(status='archived').order_by('-date_updated')
+    
+    paginator = Paginator(archived_posts, 20)  # 20 posts per page
+    page_number = request.GET.get('page')
+    posts = paginator.get_page(page_number)
+    
+    context = {
+        'posts': posts,
+    }
+    return render(request, 'main/archived_posts.html', context)
