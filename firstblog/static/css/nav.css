@@ -2,7 +2,7 @@
 
 /* Root Variables - Make sure these are defined in your index.css */
 :root {
-  --nav-height: 80px;
+  --nav-height: 100px;
 }
 
 /* ===== MAIN NAVBAR CONTAINER ===== */
@@ -52,10 +52,12 @@
   text-decoration: none;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-sm);
   transition: var(--transition-smooth);
   position: relative;
   z-index: 1051;
+  height: 100%;
 }
 
 .navbar-brand:hover {
@@ -74,10 +76,9 @@
 } */
 
 .navbar-brand .brand-logo {
-  height: 60px; /* Adjusted to fit within navbar height */
+  height: 80px; /* Adjusted to fit within navbar height */
   width: auto;
-  vertical-align: middle;
-  /* filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3)); */ /* Removed filter */
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
   transition: var(--transition-smooth);
 }
 
@@ -111,24 +112,10 @@
   transform: scale(1.05);
 }
 
-.toggler-icon {
-  width: 25px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 2px;
-  transition: var(--transition-smooth);
-}
 
-.navbar-toggler.active .toggler-icon:nth-child(1) {
-  transform: rotate(45deg) translate(6px, 6px);
-}
 
-.navbar-toggler.active .toggler-icon:nth-child(2) {
-  opacity: 0;
-}
-
-.navbar-toggler.active .toggler-icon:nth-child(3) {
-  transform: rotate(-45deg) translate(6px, -6px);
+.navbar-toggler.active i {
+  transform: rotate(90deg);
 }
 
 /* ===== NAVBAR MENU ===== */
@@ -443,6 +430,15 @@
   transition: var(--transition-normal);
 }
 
+.unread-notification {
+  background-color: rgba(233, 196, 106, 0.1); /* A light secondary color */
+  border-left: 3px solid var(--secondary-color);
+}
+
+.unread-notification:hover {
+  background-color: rgba(233, 196, 106, 0.2);
+}
+
 .logout-btn {
   color: var(--error-color);
 }
@@ -569,7 +565,12 @@ main.container {
 /* ===== RESPONSIVE STYLES ===== */
 @media (max-width: 991px) {
   /* Show mobile elements */
-
+  .navbar-brand .brand-logo {
+    height: 70px; /* Adjusted to fit within navbar height */
+    width: auto;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+    transition: var(--transition-smooth);
+  }
   .dropdown-notification {
     display: none;
   }

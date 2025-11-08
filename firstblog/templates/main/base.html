@@ -38,7 +38,7 @@
                         <div class="dropdown-menu dropdown-menu-mobile" id="notificationMenuMobile" aria-labelledby="notificationDropdownMobile">
                             <h6 class="dropdown-header">Notifications</h6>
                             {% for notification in recent_notifications %}
-                                <a class="text-wrap dropdown-item" href="{{ notification.target.get_absolute_url }}">
+                                <a class="text-wrap dropdown-item {% if not notification.read %}unread-notification{% endif %}" href="{{ notification.target.get_absolute_url }}">
                                     <small>{{ notification.actor.get_full_name }} {{ notification.verb }} {{ notification.target|truncatewords:3 }}</small>
                                     <span class="text-muted small">{{ notification.timestamp|timesince}} ago</span>
                                 </a>
@@ -54,9 +54,7 @@
     
                     <!-- Mobile Toggle Button -->
                     <button class="navbar-toggler" type="button" id="navbarToggle">
-                        <span class="toggler-icon"></span>
-                        <span class="toggler-icon"></span>
-                        <span class="toggler-icon"></span>
+                        <i class="fas fa-bars"></i>
                     </button>
                 </div>
 
@@ -130,7 +128,7 @@
                             <div class="dropdown-menu" id="notificationMenu" aria-labelledby="notificationDropdown">
                                 <h6 class="dropdown-header">Notifications</h6>
                                 {% for notification in recent_notifications %}
-                                    <a class="dropdown-item" href="{{ notification.target.get_absolute_url }}">
+                                    <a class="dropdown-item {% if not notification.read %}unread-notification{% endif %}" href="{{ notification.target.get_absolute_url }}">
                                         <small>{{ notification.actor.get_full_name }} {{ notification.verb }} {{ notification.target }}</small>
                                         <div class="text-muted small">{{ notification.timestamp|timesince }} ago</div>
                                     </a>
