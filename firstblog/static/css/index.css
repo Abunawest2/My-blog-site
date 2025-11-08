@@ -3,9 +3,9 @@
 
 body {
   background: linear-gradient(
-    135deg,
+    280deg,
     var(--bg-light) 0%,
-    var(--border-light) 100%
+    var(--border-medium) 100%
   );
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -212,15 +212,14 @@ main.container {
   border-color: var(--secondary-color) !important;
 }
 
-
-.page-link{
+.page-link {
   color: var(--primary-color);
   transition: var(--transition-normal);
   cursor: pointer;
   font-weight: var(--font-weight-medium);
 }
 
-.page-item{
+.page-item {
   border-radius: var(--radius-md);
 }
 
@@ -309,5 +308,5 @@ main.container {
 }
 
 .post-like-btn.liked .fa-heart {
-    color: var(--text-white);
+  color: var(--text-white);
 }

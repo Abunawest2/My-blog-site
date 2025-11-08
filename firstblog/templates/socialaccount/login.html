@@ -1,0 +1,62 @@
+{% extends "main/base.html" %}
+{% load i18n %}
+{% load static %}
+{%load socialaccount%}
+
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock css %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <form class="auth-form" method="post">
+                    {% csrf_token %}
+                    <div class="auth-header">
+                        <div class="auth-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h2 class="auth-title">
+                            {% if process == "connect" %}
+                                Connect Account
+                            {% else %}
+                                Sign In
+                            {% endif %}
+                        </h2>
+                        <p class="auth-subtitle">
+                            {% if process == "connect" %}
+                                {% blocktrans with provider.name as provider %}
+                                You are about to connect a new third-party account from <strong>{{ provider }}</strong>.
+                                {% endblocktrans %}
+                            {% else %}
+                                {% blocktrans with provider.name as provider %}
+                                You are about to sign in using a third-party account from <strong>{{ provider }}</strong>.
+                                {% endblocktrans %}
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <button type="submit" class="btn-auth">
+                        <i class="fas fa-sign-in-alt me-2"></i>{% trans "Continue" %}
+                    </button>
+
+                    <div class="auth-link">
+                        <a href="{% url 'login' %}">{% trans "Back to login options" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock scripts %}

@@ -13,6 +13,8 @@ from .forms import UserForm, BlogPostForm, ContactForm, UserSettingsForm, Change
 
 from django.contrib.auth import update_session_auth_hash
 from django.core.mail import send_mail, EmailMessage
+from .models import BlogPost, PostLike, CustomUser, UserPostView, Comment, CommentLike, Category, Notification
+from django.db.models import F
 
 # ... existing views ...
 
@@ -42,8 +44,6 @@ def contact(request):
         form = ContactForm()
 
     return render(request, 'main/contact.html', {'form': form})
-from .models import BlogPost, PostLike, CustomUser, UserPostView, Comment, CommentLike, Category
-from django.db.models import F
 
 
 # Utility function to check if user is an author
@@ -92,18 +92,20 @@ def SignIn(request):
         else:
             try:
                 get_object_or_404(CustomUser, email=email)
-                error_msg = "Incorrect password"
+                error_msg = "Invalid Credentials!!"
             except:
-                error_msg = "Email does not exist"
+                error_msg = "Invalid Credentials!!"
             return render(request, 'main/login.html', {'error_msg': error_msg})
     else:
         return render(request, 'main/login.html')
 
 
 def logout_view(request):
-    logout(request)
-    messages.success(request, 'You have been logged out successfully.')
-    return redirect('home')
+    if request.method == 'POST':
+        logout(request)
+        messages.success(request, 'You have been logged out successfully.')
+        return redirect('home')
+    return render(request, 'account/logout.html')
 
 
 # Home View
@@ -359,6 +361,13 @@ def toggle_post_like(request, post_pk):
         PostLike.objects.create(post=post, user=request.user)
         liked = True
         message = 'Post liked'
+        if post.author != request.user:
+            Notification.objects.create(
+                recipient=post.author,
+                actor=request.user,
+                verb='liked',
+                target=post
+            )
     liked_by_user = post.is_liked_by(request.user)
 
 
@@ -410,10 +419,21 @@ def update_post(request, pk):
     categories = Category.objects.all()
     
     if request.method == 'POST':
+        old_status = post.status # Get the old status before saving the form
         form = BlogPostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
-            form.save()
+            post = form.save() # Save the form to update the post object
             messages.success(request, 'Post updated successfully!')
+
+            # Create a notification if the post is published
+            if old_status == 'draft' and post.status == 'published':
+                Notification.objects.create(
+                    recipient=post.author,
+                    actor=request.user,
+                    verb='published',
+                    target=post
+                )
+
             return redirect('post_detail', pk=post.pk)
         else:
             messages.error(request, 'Please correct the errors below.')
@@ -450,11 +470,18 @@ def add_comment_to_post(request, pk):
     comment_text = request.POST.get('comment_text', '').strip()
     
     if comment_text:
-        Comment.objects.create(
+        comment = Comment.objects.create(
             post=post,
             author=request.user,
             text=comment_text
         )
+        if post.author != request.user:
+            Notification.objects.create(
+                recipient=post.author,
+                actor=request.user,
+                verb='commented on',
+                target=post
+            )
         messages.success(request, 'Your comment has been added!')
     else:
         messages.error(request, 'Comment cannot be empty.')
@@ -478,6 +505,13 @@ def add_reply_to_comment(request, comment_pk):
             text=reply_text,
             parent=parent_comment
         )
+        if parent_comment.author != request.user:
+            Notification.objects.create(
+                recipient=parent_comment.author,
+                actor=request.user,
+                verb='replied to',
+                target=parent_comment
+            )
         messages.success(request, 'Your reply has been added!')
     else:
         messages.error(request, 'Reply cannot be empty.')
@@ -498,6 +532,7 @@ def delete_comment(request, comment_pk):
         comment.delete()
         messages.success(request, 'Comment deleted successfully!')
     else:
+        messages.error(request, 'You do not have permission to delete this comment.')
     next_url = request.POST.get('next', request.META.get('HTTP_REFERER', 'home'))
     return redirect(next_url)
 
@@ -538,6 +573,13 @@ def toggle_comment_like(request, comment_pk):
         CommentLike.objects.create(comment=comment, user=request.user)
         liked = True
         message = 'Comment liked'
+        if comment.author != request.user:
+            Notification.objects.create(
+                recipient=comment.author,
+                actor=request.user,
+                verb='liked your comment on',
+                target=comment.post
+            )
     
     return JsonResponse({
         'success': True,
@@ -669,3 +711,10 @@ def archived_posts_list(request):
         'posts': posts,
     }
     return render(request, 'main/archived_posts.html', context)
+
+@login_required
+def notification_list(request):
+    """Display all notifications for the user and mark them as read."""
+    notifications = request.user.notifications.all()
+    request.user.notifications.filter(read=False).update(read=True)
+    return render(request, 'main/notifications.html', {'notifications': notifications})

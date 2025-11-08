@@ -63,7 +63,7 @@
   transform: translateY(-2px);
   text-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
 }
-
+/* 
 .navbar-brand i {
   font-size: 1.8rem;
   animation: gentleGlow 3s ease-in-out infinite;
@@ -71,6 +71,14 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+} */
+
+.navbar-brand .brand-logo {
+  height: 60px; /* Adjusted to fit within navbar height */
+  width: auto;
+  vertical-align: middle;
+  /* filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3)); */ /* Removed filter */
+  transition: var(--transition-smooth);
 }
 
 @keyframes gentleGlow {
@@ -172,6 +180,10 @@
   white-space: nowrap;
   cursor: pointer;
   background: transparent;
+}
+
+.nav-link.nav-icon-btn {
+  overflow: hidden; /* Allow badge to be visible */
 }
 
 .nav-link::before {
@@ -460,33 +472,40 @@
 /* ===== NOTIFICATION BADGE ===== */
 .badge-notification {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  background: var(--error-color);
+  top: 15px;
+  right: 17px;
+  transform: translate(50%, -50%);
+  background: var(--secondary-color);
   color: var(--text-white);
-  border-radius: 50%;
-  width: 20px;
+  border-radius: 50px;
+  min-width: 20px;
   height: 20px;
+  padding: 0 6px;
   font-size: 0.7rem;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: var(--font-weight-bold);
-  border: 2px solid var(--primary-color);
+  border: 2px solid var(--secondary-color);
   animation: pingPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.4);
+  box-shadow: 0 2px 8px var(--primary-color);
   z-index: 1;
+}
+
+.small-screen-notification-badge {
+  display: none;
+  gap: 50px;
 }
 
 @keyframes pingPulse {
   0%,
   100% {
-    transform: scale(1);
-    box-shadow: 0 2px 8px rgba(229, 62, 62, 0.4);
+    transform: scale(1) translate(50%, -50%);
+    box-shadow: 0 2px 8px rgba(233, 197, 106, 0.4);
   }
   50% {
-    transform: scale(1.1);
-    box-shadow: 0 4px 15px rgba(229, 62, 62, 0.6);
+    transform: scale(1.1) translate(50%, -50%);
+    box-shadow: 0 4px 15px rgba(233, 197, 106, 0.6);
   }
 }
 
@@ -550,6 +569,13 @@ main.container {
 /* ===== RESPONSIVE STYLES ===== */
 @media (max-width: 991px) {
   /* Show mobile elements */
+
+  .dropdown-notification {
+    display: none;
+  }
+  .small-screen-notification-badge {
+    display: flex;
+  }
   .mobile-only {
     display: block !important;
   }
@@ -653,12 +679,12 @@ main.container {
   }
 
   /* Mobile dropdown menu */
-  .dropdown-menu {
-    position: static;
+  #navbarMenu .dropdown-menu {
+    position: relative;
     opacity: 1;
     visibility: visible;
     transform: none;
-    width: 100%;
+    width: 75%;
     margin-top: 0.5rem;
     max-height: 0;
     overflow: hidden;
@@ -676,6 +702,16 @@ main.container {
     justify-content: flex-start;
     text-align: left;
     padding: 1rem 1.5rem;
+  }
+
+  .dropdown-wrapper {
+    position: static;
+  }
+
+  .dropdown-menu-mobile {
+    display: flex;
+    width: 100%;
+    right: 0;
   }
 
   .dropdown-item:hover {

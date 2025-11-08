@@ -25,16 +25,40 @@
             <div class="navbar-wrapper">
                 <!-- Brand/Logo -->
                 <a class="navbar-brand" href="{% url 'home' %}">
-                    <i class="fas fa-blog"></i>
-                    <span>MyBlog</span>
+                    <img class='brand-logo' src="{% static 'images/logo.png' %}" alt="brand-logo">
                 </a>
-
-                <!-- Mobile Toggle Button -->
-                <button class="navbar-toggler" type="button" id="navbarToggle">
-                    <span class="toggler-icon"></span>
-                    <span class="toggler-icon"></span>
-                    <span class="toggler-icon"></span>
-                </button>
+                <div class="small-screen-notification-badge">
+                    <div class="dropdown-wrapper">
+                        <button class="nav-link nav-icon-btn" id="notificationDropdownMobile" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            {% if unread_notification_count > 0 %}
+                                <span class="badge-notification">{{ unread_notification_count }}</span>
+                            {% endif %}
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-mobile" id="notificationMenuMobile" aria-labelledby="notificationDropdownMobile">
+                            <h6 class="dropdown-header">Notifications</h6>
+                            {% for notification in recent_notifications %}
+                                <a class="text-wrap dropdown-item" href="{{ notification.target.get_absolute_url }}">
+                                    <small>{{ notification.actor.get_full_name }} {{ notification.verb }} {{ notification.target|truncatewords:3 }}</small>
+                                    <span class="text-muted small">{{ notification.timestamp|timesince}} ago</span>
+                                </a>
+                            {% empty %}
+                                <a class="dropdown-item" href="#">No new notifications</a>
+                            {% endfor %}
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-center" href="{% url 'notifications' %}">
+                                <small>View all notifications</small>
+                            </a>
+                        </div>
+                    </div>
+    
+                    <!-- Mobile Toggle Button -->
+                    <button class="navbar-toggler" type="button" id="navbarToggle">
+                        <span class="toggler-icon"></span>
+                        <span class="toggler-icon"></span>
+                        <span class="toggler-icon"></span>
+                    </button>
+                </div>
 
                 <!-- Navbar Content -->
                 <div class="navbar-menu" id="navbarMenu">
@@ -82,6 +106,7 @@
                         </button>
                     </form>
 
+
                     <!-- Right Side Navigation -->
                     <ul class="nav-list nav-user">
                         {% if user.is_authenticated %}
@@ -94,13 +119,29 @@
                             </a>
                         </li>
 
-                        <!-- Notifications -->
-                        <li class="nav-item">
-                            <a class="nav-link nav-icon-btn" href="#" title="Notifications">
+                        <!-- Notifications Dropdown -->
+                        <li class="dropdown-notification nav-item dropdown-wrapper">
+                            <button class="nav-link nav-icon-btn" id="notificationDropdown" aria-expanded="false">
                                 <i class="fas fa-bell"></i>
-                                <span class="mobile-only">Notifications</span>
-                                <!-- <span class="badge-notification">3</span> -->
-                            </a>
+                                {% if unread_notification_count > 0 %}
+                                    <span class="badge-notification">{{ unread_notification_count }}</span>
+                                {% endif %}
+                            </button>
+                            <div class="dropdown-menu" id="notificationMenu" aria-labelledby="notificationDropdown">
+                                <h6 class="dropdown-header">Notifications</h6>
+                                {% for notification in recent_notifications %}
+                                    <a class="dropdown-item" href="{{ notification.target.get_absolute_url }}">
+                                        <small>{{ notification.actor.get_full_name }} {{ notification.verb }} {{ notification.target }}</small>
+                                        <div class="text-muted small">{{ notification.timestamp|timesince }} ago</div>
+                                    </a>
+                                {% empty %}
+                                    <a class="dropdown-item" href="#">No new notifications</a>
+                                {% endfor %}
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-center" href="{% url 'notifications' %}">
+                                    <small>View all notifications</small>
+                                </a>
+                            </div>
                         </li>
 
                         <!-- User Dropdown -->
@@ -164,13 +205,10 @@
 
                                 <li class="dropdown-divider"></li>
                                 <li>
-                                    <form method="POST" action="{% url 'logout' %}" class="dropdown-form">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item logout-btn">
-                                            <i class="fas fa-sign-out-alt"></i>
-                                            <span>Log Out</span>
-                                        </button>
-                                    </form>
+                                    <a href="{% url 'logout' %}" class="dropdown-item logout-btn">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span>Log Out</span>
+                                    </a>
                                 </li>
                             </ul>
                         </li>
@@ -325,6 +363,39 @@
                 if (!userDropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
                     dropdownMenu.classList.remove('show');
                     userDropdownToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+        // Notification dropdown toggle
+        const notificationDropdownToggle = document.getElementById('notificationDropdown');
+        const notificationMenu = document.getElementById('notificationMenu');
+
+        if (notificationDropdownToggle) {
+            notificationDropdownToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                notificationMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!notificationDropdownToggle.contains(e.target) && !notificationMenu.contains(e.target)) {
+                    notificationMenu.classList.remove('show');
+                }
+            });
+        }
+
+        // Mobile notification dropdown toggle
+        const mobileNotificationDropdownToggle = document.getElementById('notificationDropdownMobile');
+        const mobileNotificationMenu = document.getElementById('notificationMenuMobile');
+
+        if (mobileNotificationDropdownToggle) {
+            mobileNotificationDropdownToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                mobileNotificationMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!mobileNotificationDropdownToggle.contains(e.target) && !mobileNotificationMenu.contains(e.target)) {
+                    mobileNotificationMenu.classList.remove('show');
                 }
             });
         }
