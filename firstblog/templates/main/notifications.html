@@ -1,0 +1,24 @@
+{% extends 'main/base.html' %}
+
+{% block title %}My Notifications{% endblock title %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">My Notifications</h1>
+
+    {% if notifications %}
+        <ul class="list-group">
+            {% for notification in notifications %}
+                <li class="list-group-item {% if not notification.read %}list-group-item-light{% endif %}">
+                    <a href="{{ notification.target.get_absolute_url }}" class="text-decoration-none text-dark">
+                        {{ notification.actor.get_full_name }} {{ notification.verb }} {{ notification.target }}
+                    </a>
+                    <small class="text-muted">{{ notification.timestamp|timesince }} ago</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no notifications.</p>
+    {% endif %}
+</div>
+{% endblock content %}

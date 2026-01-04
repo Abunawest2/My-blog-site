@@ -1,0 +1,63 @@
+/* Collapsible Comments */
+.comment-thread {
+    position: relative;
+}
+
+.comment-replies {
+    display: none;
+    padding-left: 20px;
+    border-left: 2px solid #e0e0e0;
+}
+
+.comment-replies.show {
+    display: block;
+}
+
+.toggle-replies {
+    background-color: var(--primary-color);
+    color: var(--text-white);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 0.8em;
+    font-weight: bold;
+    user-select: none;
+    transition: all 0.2s ease-in-out;
+    margin-left: auto;
+}
+
+.toggle-replies:hover {
+    background-color: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+.toggle-replies.show {
+    background-color: var(--primary-dark);
+}
+
+@media (max-width: 768px) {
+    .toggle-replies {
+        font-size: 0.7em;
+        padding: 4px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .toggle-replies {
+        font-size: 0.6em;
+        padding: 3px 6px;
+    }
+}
+
+.level-2 {
+    margin-left: 20px;
+}
+
+.level-3 {
+    margin-left: 40px;
+}
+
+.level-4 {
+    margin-left: 60px;
+}

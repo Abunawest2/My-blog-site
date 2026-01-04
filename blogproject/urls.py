@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from froala_editor import views
 from firstblog.admin import custom_admin_site
 
 urlpatterns = [
@@ -25,5 +26,6 @@ urlpatterns = [
 
     # path('admin/', admin.site.urls),
     path('tinymce/', include('tinymce.urls'), name='tinymce-js'),
+    # path('froala_editor/',include('froala_editor.urls')),
     path('', include('firstblog.url'))
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

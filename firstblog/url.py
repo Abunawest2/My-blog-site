@@ -20,7 +20,8 @@ urlpatterns = [
     
     # Search & Filter URLs
     path('search/', views.search_posts, name='search_posts'),
-    path('category/<str:category_name>/', views.category_posts, name='category_posts'),
+    path('category/create/', views.create_category, name='create_category'),
+    path('category/<slug:category_slug>/', views.category_posts, name='category_posts'),
     path('author/<path:username>/', views.author_profile, name='author_profile'),
     path('archived-posts/', views.archived_posts_list, name='archived_posts'),
 
@@ -28,10 +29,12 @@ urlpatterns = [
     path('post/<int:pk>/comment/', views.add_comment_to_post, name='add_comment_to_post'),
     path('comment/<int:comment_pk>/reply/', views.add_reply_to_comment, name='add_reply_to_comment'),
     path('comment/<int:comment_pk>/delete/', views.delete_comment, name='delete_comment'),
+    path('comment/<int:comment_pk>/update/', views.update_comment, name='update_comment'),
     path('comment/<int:comment_pk>/like/', views.toggle_comment_like, name='toggle_comment_like'),
     
     # User Dashboard
     path('dashboard/', views.user_dashboard, name='user_dashboard'),
+    path('notifications/', views.notification_list, name='notifications'),
     
     # Other Pages
     path('about/', views.about, name='about'),

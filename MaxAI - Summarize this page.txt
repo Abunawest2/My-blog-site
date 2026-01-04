@@ -1,0 +1,114 @@
+---------------------------------------------------------
+Ask AI anything powered by MaxAI
+---------------------------------------------------------
+
+User: Summarize this page
+
+
+MaxAI: # Styles & Scripts
+
+When creating custom dashboards or components, custom styles may be needed. For Unfold version 0.56 and above, writing custom CSS styles directly is recommended over configuring Tailwind to avoid potential conflicts and for simplicity.
+
+## Tailwind 4.x (for Unfold 0.57+)
+
+Tailwind 4 consolidates settings within the main CSS file, simplifying setup.
+
+**Setup**:
+
+1.  Install Tailwind CSS and its CLI tool: `npm i tailwindcss @tailwindcss/cli`.
+2.  Create a `styles.css` file and add `@import 'tailwindcss';`.
+3.  Compile the styles using the CLI tool and add the CSS file path to `UNFOLD["STYLES"]`.
+
+**Example**:
+
+*   Compilation command: `npx @tailwindcss/cli -i styles.css -o your_project/static/css/styles.css --minify`.
+*   `UNFOLD` settings in `settings.py`:
+
+```python
+from django.templatetags.static import static
+UNFOLD = {
+    "STYLES": [
+        lambda request: static("css/styles.css"),
+    ],
+}
+```## Tailwind 3.x (for Unfold below 0.56)
+
+**Installation**:
+
+*   Run `npm install tailwindcss` in the project directory.
+
+**Configuration**:
+
+*   Create a `tailwind.config.js` file with minimal color specifications to match the admin theme.
+
+**Example** `tailwind.config.js`:
+
+```javascript
+module.exports = {
+  darkMode: "class",
+  content: ["./your_project/**/*.{html,py,js}"],
+  theme: {
+    extend: {
+      colors: {
+        base: {
+          50: "rgb(var(--color-base-50) / <alpha-value>)",
+          // ... other base colors
+        },
+        primary: {
+          50: "rgb(var(--color-primary-50) / <alpha-value>)",
+          // ... other primary colors
+        },
+        font: {
+          "subtle-light": "rgb(var(--color-font-subtle-light) / <alpha-value>)",
+          // ... other font colors
+        },
+      },
+    },
+  },
+};
+```**CSS File**:
+
+*   Create a `styles.css` file and include the Tailwind directives.
+
+**Example** `styles.css`:
+
+```css
+/* styles.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Your custom styles */
+.some-class {
+  @apply bg-primary-600;
+}
+```**Compilation and Loading**:
+
+*   Compile the styles and load them into the admin using the `STYLES` key in the `UNFOLD` dictionary.
+
+**Commands**:
+
+```bash
+# One-time build with minified output
+npx tailwindcss -i styles.css -o your_project/static/css/styles.css --minify
+
+# Watch for changes and compile automatically with minified output
+npx tailwindcss -i styles.css -o your_project/static/css/styles.css --minify --watch
+```**`package.json` Scripts**:
+
+*   Automate the process by adding scripts to your `package.json` file.
+
+**Example**:
+
+```json
+{
+  "scripts": {
+    "tailwind:watch": "npx tailwindcss -i styles.css -o your_project/static/css/styles.css --minify --watch",
+    "tailwind:build": "npx tailwindcss -i styles.css -o your_project/static/css/styles.css --minify"
+  }
+  // rest of configuration
+}
+```
+
+Sources:
+https://unfoldadmin.com/docs/styles-scripts/customizing-tailwind/

@@ -133,7 +133,7 @@
                             <h5 class="card-title">Suggested Topics for You</h5>
                             <div class="list-group">
                                 {% for topic in suggested_topics %}
-                                    <a href="/?category={{topic.name}}" class="list-group-item list-group-item-action">{{ topic.name }}</a>
+                                    <a href="{% url 'home' %}?category={{ topic.slug }}" class="list-group-item list-group-item-action">{{ topic.name }}</a>
                                 {% endfor %}
                             </div>
                         </div>

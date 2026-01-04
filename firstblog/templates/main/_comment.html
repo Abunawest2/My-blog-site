@@ -1,0 +1,95 @@
+{% load static %}
+
+<div class="comment-thread level-{{ level }}">
+    <div class="comment-item" id="comment-{{ comment.pk }}">
+        {% comment %} {% if comment.replies.all %}
+            <button class="toggle-replies">View replies ({{ comment.replies.count }})</button>
+        {% endif %} {% endcomment %}
+        <div class="comment-header">
+            <div class="user-avatar">
+                {{ comment.author.username|slice:":2"|upper }}
+            </div>
+            <div class="comment-author">
+                <div class="comment-author-name">{{ comment.author.get_full_name|default:comment.author.username }}</div>
+                <div class="comment-date">{{ comment.date_created|timesince }} ago</div>
+            </div>
+            {% if user == comment.author or user.is_superuser %}
+            <div class="ms-auto">
+                {% if user == comment.author %}
+                    <button class="btn btn-sm comment-edit-btn" data-comment-id="{{ comment.pk }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                {% endif %}
+                <form method="POST" action="{% url 'delete_comment' comment.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn btn-sm comment-delete-btn" onclick="return confirm('Are you sure?')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        <div class="comment-content">
+            {{ comment.text }}
+        </div>
+        <div class="edit-comment-form" id="edit-comment-form-{{ comment.pk }}" style="display: none;">
+            <form method="POST" action="{% url 'update_comment' comment.pk %}" class="comment-edit-form">
+                {% csrf_token %}
+                <textarea class="form-control" name="text" rows="3">{{ comment.text }}</textarea>
+                <div class="mt-2">
+                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                    <button type="button" class="btn btn-sm btn-secondary cancel-edit" data-comment-id="{{ comment.pk }}">Cancel</button>
+                </div>
+            </form>
+        </div>
+        <div class="comment-footer">
+            <button class="comment-action-btn like-btn {% if comment.id in liked_comment_ids %} liked {% endif %}" data-comment-id="{{ comment.pk }}">
+                <i class="{% if comment.id in liked_comment_ids %}fas{% else %}far{% endif %} fa-heart"></i>
+                <span class="like-count">{{ comment.likes_count|default:0 }}</span>
+            </button>
+            {% if user.is_authenticated %}
+            <button class="comment-action-btn reply-btn" data-comment-id="{{ comment.pk }}">
+                <i class="fas fa-reply"></i>
+                Reply
+            </button>
+            {% endif %}
+            {% if comment.replies.all %}
+                <button class="toggle-replies">View replies ({{ comment.replies.count }})</button>
+            {% endif %}
+        </div>
+
+        <!-- Reply Form -->
+        {% if user.is_authenticated %}
+        <div class="reply-section" style="display: none;" id="reply-section-{{ comment.pk }}">
+            <div class="reply-form">
+                <form method="POST" action="{% url 'add_reply_to_comment' comment.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <div class="comment-input-wrapper">
+                        <div class="user-avatar small">
+                            {{ user.username|slice:":2"|upper }}
+                        </div>
+                        <div class="comment-input">
+                            <textarea class="form-control form-control-sm" name="reply_text" rows="2" placeholder="Write a reply..." required></textarea>
+                            <div class="comment-actions">
+                                <button type="button" class="btn btn-sm btn-light btn-comment cancel-reply">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-comment-primary btn-comment">Reply</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Replies -->
+    {% if comment.replies.all %}
+    <div class="comment-replies">
+        {% for reply in comment.replies.all %}
+            {% include "main/_comment.html" with comment=reply level=level|add:1 %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>

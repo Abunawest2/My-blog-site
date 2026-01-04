@@ -1,6 +1,8 @@
-# admin.py - Add this to your existing admin.py
-# from django.contrib.admin import ModelAdmin
-from .models import BlogPost, PostLike, CustomUser, Comment, CommentLike, Category, UserPostView, AuthorApplication, AuthorProfile
+from django.db import models
+from django.contrib import admin
+from .models import BlogPost, PostLike, CustomUser, Comment, SuperCategory, SubCategory, Category, AuthorApplication, AuthorProfile, Notification, CommentLike, UserPostView
+from .forms import BlogPostForm
+from django.db.models import Count
 from unfold.admin import ModelAdmin
 from django.utils import timezone
 # IMPORT ALLAUTH MODELS
@@ -13,25 +15,51 @@ from unfold.forms import UserChangeForm, UserCreationForm, AdminPasswordChangeFo
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .forms import AdminBlogPostForm
+from unfold.contrib.forms.widgets import WysiwygWidget
 
 from django.contrib.auth.models import Group
 
 
 class AuthorApplicationAdmin(ModelAdmin):
-    list_display = ['user__username', 'user__email', 'status', 'date_applied']
-    list_filter = ['status', 'date_applied']
+    list_display = ['user__username', 'user__email', 'primary_genre', 'status', 'date_applied']
+    list_filter = ['status', 'primary_genre', 'date_applied']
     list_editable = ['status']
     search_fields = ['name', 'email', 'bio']
     readonly_fields = ['name', 'email', 'bio', 'sample_work_link', 'date_applied', 'reviewed_by', 'reviewed_at']
         
 
     def save_model(self, request, obj, form, change):
-        if 'status' in form.changed_data and obj.status == 'approved':
-            obj.reviewed_by = request.user
-            obj.reviewed_at = timezone.now()
-            if obj.user:
-                AuthorProfile.objects.get_or_create(user=obj.user)
-        super().save_model(request, obj, form, change)
+        # Get old status if the object is being changed
+        old_status = AuthorApplication.objects.get(pk=obj.pk).status if obj.pk else None
+        
+        super().save_model(request, obj, form, change) # Save the object first
+
+        if 'status' in form.changed_data:
+            if obj.status == 'approved' and old_status != 'approved':
+                obj.reviewed_by = request.user
+                obj.reviewed_at = timezone.now()
+                if obj.user:
+                    AuthorProfile.objects.get_or_create(user=obj.user)
+                
+                # Create notification for approval
+                if obj.user: # Ensure there's a registered user to notify
+                    Notification.objects.create(
+                        recipient=obj.user,
+                        actor=request.user,
+                        verb='approved your author application',
+                        target=obj
+                    )
+            elif obj.status == 'rejected' and old_status != 'rejected':
+                # Create notification for rejection
+                if obj.user: # Ensure there's a registered user to notify
+                    Notification.objects.create(
+                        recipient=obj.user,
+                        actor=request.user,
+                        verb='rejected your author application',
+                        target=obj
+                    )
+
+
 
 
 class AuthorProfileAdmin(ModelAdmin):
@@ -109,10 +137,20 @@ class CommentLikeAdmin(ModelAdmin):
     list_filter = ['date_created']
     search_fields = ['user__username', 'comment__text']
     date_hierarchy = 'date_created'
+
+class SuperCategoryAdmin(ModelAdmin):
+    list_display = ('name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+
+class SubCategoryAdmin(ModelAdmin):
+    list_display = ('name', 'super_category', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+    list_filter = ('super_category',)
+
 class CategoryAdmin(ModelAdmin):
-    list_display = ['name', 'post_count', 'date_created']
-    search_fields = ['name', 'description']
-    date_hierarchy = 'date_created'
+    list_display = ('name', 'sub_category', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+    list_filter = ('sub_category',)
 
 
 class SocialAccountAdmin(ModelAdmin):
@@ -155,6 +193,8 @@ custom_admin_site.register(BlogPost, BlogPostAdmin)
 custom_admin_site.register(PostLike, PostLikeAdmin)
 custom_admin_site.register(Comment, CommentAdmin)
 custom_admin_site.register(CommentLike, CommentLikeAdmin)
+custom_admin_site.register(SuperCategory, SuperCategoryAdmin)
+custom_admin_site.register(SubCategory, SubCategoryAdmin)
 custom_admin_site.register(Category, CategoryAdmin)
 custom_admin_site.register(Group, customGroupAdmin)
 custom_admin_site.register(UserPostView, UserPostViewAdmin)

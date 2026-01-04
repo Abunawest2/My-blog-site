@@ -1,8 +1,9 @@
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django import forms
-from .models import BlogPost, CustomUser, Comment
+from .models import BlogPost, CustomUser, Comment, SuperCategory
 from django.core.validators import FileExtensionValidator
 from tinymce.widgets import TinyMCE  # Import TinyMCE widget
+from froala_editor.widgets import FroalaEditor
 
 class UserForm(UserCreationForm):
     username = forms.CharField(
@@ -13,11 +14,6 @@ class UserForm(UserCreationForm):
     email = forms.CharField(
         widget=forms.TextInput(
             attrs = {'class':'form-in form-control', 'placeholder':'Enter Email'}
-        )
-    )
-    password1 = forms.CharField(
-        widget=forms.PasswordInput(
-            attrs = {'class':'form-in form-control', 'placeholder':'Enter Password'}
         )
     )
     password2 = forms.CharField(
@@ -60,6 +56,12 @@ class BlogPostForm(forms.ModelForm):
         help_text='Upload an image (JPG, JPEG, PNG, or GIF). Max size: 5MB'
     )
     
+    # post = forms.CharField(
+    #     label='Post Content',
+    #     widget=FroalaEditor,
+    #     required=True,
+    #     help_text='Write the main content of your blog post'
+    # )
     post = forms.CharField(
         label='Post Content',
         widget=TinyMCE(
@@ -213,10 +215,11 @@ from .models import AuthorApplication
 class AuthorApplicationForm(forms.ModelForm):
     class Meta:
         model = AuthorApplication
-        fields = ['name', 'email', 'bio', 'sample_work_link']
+        fields = ['name', 'email', 'primary_genre', 'bio', 'sample_work_link']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Your Full Name'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Your Email Address'}),
+            'primary_genre': forms.Select(attrs={'class': 'form-control'}),
             'bio': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Tell us about yourself...'}),
             'sample_work_link': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://example.com/your-article'}),
         }
@@ -236,3 +239,8 @@ class AuthorProfileForm(forms.ModelForm):
             'facebook_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Your Facebook URL'}),
             'github_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Your GitHub URL'}),
         }
+
+class NewCategoryForm(forms.Form):
+    super_category = forms.ModelChoiceField(queryset=SuperCategory.objects.all(), required=True)
+    sub_category_name = forms.CharField(max_length=100, required=True)
+    category_name = forms.CharField(max_length=100, required=True)

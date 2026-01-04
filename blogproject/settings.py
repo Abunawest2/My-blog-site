@@ -2,6 +2,7 @@ from firstblog.password import validate_password_length
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from django.templatetags.static import static
 
 
 # Load environment variables from .env file in project root
@@ -62,6 +63,7 @@ INSTALLED_APPS = [
     # third-party apps
     'multiselectfield',
     'tinymce',
+    # 'froala_editor',
 
     # Allauth and crispy forms can be added here later
     'allauth',
@@ -74,6 +76,10 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.github',
 ]
 
+
+FROALA_EDITOR_PLUGINS = ['align', 'char_counter', 'code_beautifier' ,'code_view', 'colors', 'draggable',
+                        'emoticons','entities', 'file', 'font_family', 'font_size', 'fullscreen', 'image_manager', 'image', 'inline_style', 'line_breaker', 'link', 'lists', 'paragraph_format', 'paragraph_style', 'quick_insert', 'quote', 'save', 'table', 'url', 'video'
+                        ]
 
 TINYMCE_DEFAULT_CONFIG = {
     'height': 500,
@@ -163,6 +169,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'firstblog.context_processors.notifications',
             ],
         },
     },
@@ -251,14 +258,29 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 UNFOLD = {
-    "SITE_TITLE": "Blog Admin",
-    "SITE_HEADER": "Blog Administration",
-    "SITE_SUBHEADER": "Welcome to Blog Admin",
     "SITE_LOGO": {
-        # "light": lambda request: static("logo-light.svg"),  # light mode
-        # "dark": lambda request: static("logo-dark.svg"),  # dark mode
+        "light": lambda request: static("/images/logo.png"),  # light mode
+        "dark": lambda request: static("/images/logo.png"),  # dark mode
     },
-    }
+    "SITE_HEADER": "FirstBlog Administration",
+    "SITE_TITLE": "FirstBlog Admin Portal",
+    "INDEX_TITLE": "Welcome to FirstBlog Admin",
+    "SITE_ICON": {
+        "dark":  lambda request: static("/images/logo.png"),
+    },
+    "THEME": "light",
+    # "COLORS": {
+    #     "primary": {"500": "#0e2841"},
+    #     "secondary": {"500": "#e9c46a"},
+    #     "success": {"500": "#38a169"},
+    #     "warning": {"500": "#dd6b20"},
+    #     "danger": {"500": "#e53e3e"},
+    #     "info": {"500": "#3182ce"},
+    # },
+    "STYLES": [
+        lambda request: static("css/custom_admin.css"),
+    ],
+}
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -271,11 +293,10 @@ ACCOUNT_LOGIN_METHOD = {'email', 'username'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_UNIQUE_EMAIL = True
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-ACCOUNT_FORMS = {
-    'reset_password_from_key': 'firstblog.forms.CustomResetPasswordKeyForm',
-}
+# ACCOUNT_FORMS = {
+#     'reset_password_from_key': 'firstblog.forms.CustomResetPasswordKeyForm',
+# }
 
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

@@ -15,7 +15,10 @@
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <link rel="stylesheet" href="{% static 'css/nav.css' %}">
     <link rel="stylesheet" href="{% static 'css/tinymce-content.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
     {% block css %}{% endblock css %}
+    {% block extra_head %}{% endblock extra_head %}
 </head>
 
 <body>
@@ -26,6 +29,7 @@
                 <!-- Brand/Logo -->
                 <a class="navbar-brand" href="{% url 'home' %}">
                     <img class='brand-logo' src="{% static 'images/logo.png' %}" alt="brand-logo">
+                    <span class="brand-name">TeckBus</span>
                 </a>
                 <div class="small-screen-notification-badge">
                     <div class="dropdown-wrapper">
@@ -281,11 +285,10 @@
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <h5 class="fw-bold">
-                        <i class="fas fa-blog me-2"></i>MyBlog
+                        <img src="{% static 'images/logo.png' %}" alt="TeckBus Logo" style="height: 40px; margin-right: 10px;">TeckBus
                     </h5>
                     <p class="mb-3 opacity-75">
-                        Share your stories, ideas, and experiences with the world. Join our community of writers and
-                        readers.
+                        We are dedicated to bringing you the latest business and tech trends, reviews, and tutorials from around the world. We aim to empower our readers with knowledge and insights to thrive in the digital age.
                     </p>
                     <div class="social-links">
                         <a href="https://twitter.com/your-profile" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
@@ -323,11 +326,15 @@
             </div>
             <hr class="my-4 opacity-25">
             <div class="text-center opacity-75">
-                <small>&copy; 2025 MyBlog. All rights reserved.</small>
+                <small id="footerCopyright">&copy; 2025 MyBlog. All rights reserved.</small>
             </div>
         </div>
     </footer>
 
+    <!-- JQuery and Select2 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js"></script>
+    
     <!-- Bootstrap Scripts for Alerts & Other Components -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.min.js"></script>
@@ -354,6 +361,7 @@
                 e.preventDefault();
                 dropdownMenu.classList.toggle('show');
                 this.setAttribute('aria-expanded', dropdownMenu.classList.contains('show'));
+                
             });
 
             // Close dropdown when clicking outside
@@ -397,6 +405,12 @@
                 }
             });
         }
+
+
+        // Footer year update
+        const footerCopyright = document.getElementById('footerCopyright');
+        const currentYear = new Date().getFullYear();
+        footerCopyright.innerHTML = `&copy; ${currentYear} TeckBus. All rights reserved.`;
     </script>
 
     {% block scripts %}

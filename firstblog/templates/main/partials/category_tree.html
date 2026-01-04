@@ -1,0 +1,15 @@
+{% for category in categories %}
+<li class="list-group-item d-flex justify-content-between align-items-center">
+    <a href="?category={{ category.slug }}" class="text-decoration-none text-dark">
+        {{ category.name }}
+    </a>
+    <span class="badge bg-primary rounded-pill">{{ category.post_count }}</span>
+</li>
+{% if category.children.all %}
+    <ul class="list-group list-group-flush ms-3">
+        {% with categories=category.children.all|dictsort:"name" %}
+            {% include "main/partials/category_tree.html" %}
+        {% endwith %}
+    </ul>
+{% endif %}
+{% endfor %}

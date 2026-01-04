@@ -203,13 +203,34 @@
   background: var(--bg-light);
 }
 
-.comment-action-btn.liked {
-  color: var(--error-color);
+.comment-footer .like-btn {
+  background: none;
+  border: 2px solid var(--border-light);
+  color: var(--text-medium);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: var(--font-weight-medium);
 }
 
-.comment-action-btn.liked:hover {
-  color: var(--error-dark);
-  background: var(--error-light);
+.comment-footer .like-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.comment-footer .like-btn.liked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-white);
+}
+
+.comment-footer .like-btn.liked .fa-heart {
+    color: var(--text-white);
 }
 
 /* Reply Section */

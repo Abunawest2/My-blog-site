@@ -9,14 +9,19 @@ from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 
 from blogproject import settings
-from .forms import UserForm, BlogPostForm, ContactForm, UserSettingsForm, ChangePasswordForm, AuthorApplicationForm
+from .forms import UserForm, BlogPostForm, ContactForm, UserSettingsForm, ChangePasswordForm, AuthorApplicationForm, NewCategoryForm, AuthorProfileForm
 
 from django.contrib.auth import update_session_auth_hash
 from django.core.mail import send_mail, EmailMessage
-from .models import BlogPost, PostLike, CustomUser, UserPostView, Comment, CommentLike, Category, Notification
+from .models import BlogPost, PostLike, CustomUser, SuperCategory, SubCategory, UserPostView, Comment, CommentLike, Category, Notification
 from django.db.models import F
 
-# ... existing views ...
+def get_all_children(category):
+    """Recursively get all children of a category."""
+    children = [category]
+    for child in category.children.all():
+        children.extend(get_all_children(child))
+    return children
 
 def contact(request):
     if request.method == 'POST':
@@ -111,7 +116,7 @@ def logout_view(request):
 # Home View
 def home(request):
     """Display all blog posts with comments and search functionality"""
-    posts_list = BlogPost.objects.filter(status='published').select_related('author').prefetch_related(
+    posts_list = BlogPost.objects.filter(status='published').select_related('author', 'category__sub_category__super_category').prefetch_related(
         'comments__author',
         'comments__replies__author',
         'comments__likes',
@@ -120,6 +125,16 @@ def home(request):
     # Build a mapping from post pk to whether the current user liked the post
     liked_by_user = {str(post.pk): post.is_liked_by(request.user) for post in posts_list}
     
+    # Get all comments for the posts and check which ones are liked by the user
+    if request.user.is_authenticated:
+        comment_ids = [comment.id for post in posts_list for comment in post.comments.all()]
+        liked_comment_ids = set(CommentLike.objects.filter(
+            user=request.user, 
+            comment_id__in=comment_ids
+        ).values_list('comment_id', flat=True))
+    else:
+        liked_comment_ids = set()
+    
     # Search functionality
     search_query = request.GET.get('search', '').strip()
     if search_query:
@@ -127,20 +142,28 @@ def home(request):
             Q(title__icontains=search_query) |
             Q(post__icontains=search_query) |
             Q(author__username__icontains=search_query)
-        )
+        ) 
     
     # Category filter
     category_filter = request.GET.get('category', '').strip()
     if category_filter:
-        posts_list = posts_list.filter(category__name=category_filter)
+        try:
+            sub_category = SubCategory.objects.get(slug__iexact=category_filter)
+            posts_list = posts_list.filter(category__sub_category=sub_category)
+        except SubCategory.DoesNotExist:
+            posts_list = posts_list.none()
     
     # Pagination
     paginator = Paginator(posts_list, 5)  # 5 posts per page
     page_number = request.GET.get('page')
     posts = paginator.get_page(page_number)
     
-    # Get categories
-    categories = Category.objects.all()
+    # Get categories for hierarchical display
+    sub_categories_with_posts = SubCategory.objects.filter(
+        categories__posts__status='published'
+    ).distinct().select_related('super_category').annotate(
+        post_count=Count('categories__posts')
+    )
     
     # Get recent posts for sidebar
     recent_posts = BlogPost.objects.filter(status='published').order_by('-date_created')[:5]
@@ -150,12 +173,13 @@ def home(request):
 
     context = {
         'posts': posts,
-        'categories': categories,
+        'sub_categories': sub_categories_with_posts,
         'recent_posts': recent_posts,
         'popular_posts': popular_posts,
         'search_query': search_query,
         'category_filter': category_filter,
         'liked_by_user': liked_by_user,
+        'liked_comment_ids': liked_comment_ids,
     }
     return render(request, 'main/index.html', context)
 
@@ -181,11 +205,17 @@ def post_detail(request, pk):
     
     liked_by_user = post.is_liked_by(request.user)
     
+    if request.user.is_authenticated:
+        liked_comment_ids = set(post.comments.filter(likes__user=request.user).values_list('id', flat=True))
+    else:
+        liked_comment_ids = set()
+    
     context = {
         'post': post,
         'comments': comments,
         'related_posts': related_posts,
-        'liked_by_user': liked_by_user
+        'liked_by_user': liked_by_user,
+        'liked_comment_ids': liked_comment_ids,
     }
     return render(request, 'main/post_detail.html', context)
 
@@ -197,7 +227,7 @@ def search_posts(request):
     author_filter = request.GET.get('author', '')
     sort_by = request.GET.get('sort', '-date_created')
     
-    posts_list = BlogPost.objects.filter(status='published').select_related('author').prefetch_related('comments')
+    posts_list = BlogPost.objects.filter(status='published').select_related('author', 'category__sub_category__super_category')
     
     # Apply search filter
     if search_query:
@@ -209,7 +239,11 @@ def search_posts(request):
     
     # Apply category filter
     if category_filter:
-        posts_list = posts_list.filter(category__name=category_filter)
+        posts_list = posts_list.filter(
+            Q(category__name__iexact=category_filter) |
+            Q(category__sub_category__name__iexact=category_filter) |
+            Q(category__sub_category__super_category__name__iexact=category_filter)
+        )
     
     # Apply author filter
     if author_filter:
@@ -228,12 +262,12 @@ def search_posts(request):
     posts = paginator.get_page(page_number)
     
     # Get all categories and authors for filters
-    categories = Category.objects.all()
+    super_categories = SuperCategory.objects.prefetch_related('sub_categories__categories').all()
     authors = CustomUser.objects.filter(blogpost__isnull=False).distinct()
     
     context = {
         'posts': posts,
-        'categories': categories,
+        'super_categories': super_categories,
         'authors': authors,
         'search_query': search_query,
         'category_filter': category_filter,
@@ -244,11 +278,29 @@ def search_posts(request):
     return render(request, 'main/search.html', context)
 
 
-# Author Profile View
-from .forms import UserForm, BlogPostForm, ContactForm, UserSettingsForm, ChangePasswordForm, AuthorApplicationForm, AuthorProfileForm
-from .models import AuthorProfile
-
-# ... existing views ...
+@login_required
+def create_category(request):
+    if request.method == 'POST':
+        form = NewCategoryForm(request.POST)
+        if form.is_valid():
+            super_category = form.cleaned_data['super_category']
+            sub_category_name = form.cleaned_data['sub_category_name']
+            category_name = form.cleaned_data['category_name']
+            
+            sub_category, _ = SubCategory.objects.get_or_create(
+                super_category=super_category,
+                name=sub_category_name
+            )
+            category, _ = Category.objects.get_or_create(
+                sub_category=sub_category,
+                name=category_name
+            )
+            messages.success(request, 'New category created successfully!')
+            return redirect('create_post')
+    else:
+        form = NewCategoryForm()
+    
+    return render(request, 'main/create_category.html', {'form': form})
 
 @login_required
 def author_profile(request, username):
@@ -302,13 +354,13 @@ def author_profile(request, username):
     posts = paginator.get_page(page_number)
     total_posts = posts_list.count()
     total_comments = Comment.objects.filter(post__author=author).count()
-    author_categories = Category.objects.filter(posts__author=author).distinct()
+    author_categories = Category.objects.filter(posts__author=author).distinct().select_related('sub_category__super_category')
     related_posts = BlogPost.objects.filter(category__in=author_categories).exclude(author=author).distinct().order_by('-date_created')[:5]
     suggested_topics = None
     if not author.is_author:
-        liked_posts_categories = Category.objects.filter(posts__post_likes__user=author).distinct()
-        commented_posts_categories = Category.objects.filter(posts__comments__author=author).distinct()
-        suggested_topics = (liked_posts_categories | commented_posts_categories).distinct()
+        liked_posts_sub_categories = SubCategory.objects.filter(categories__posts__post_likes__user=author).distinct().select_related('super_category')
+        commented_posts_sub_categories = SubCategory.objects.filter(categories__posts__comments__author=author).distinct().select_related('super_category')
+        suggested_topics = (liked_posts_sub_categories | commented_posts_sub_categories).distinct()
 
     context = {
         'author': author,
@@ -325,13 +377,13 @@ def author_profile(request, username):
 
 
 # Category View
-def category_posts(request, category_name):
+def category_posts(request, category_slug):
     """Display all posts in a specific category"""
-    category = get_object_or_404(Category, name=category_name)
+    sub_category = get_object_or_404(SubCategory, slug__iexact=category_slug)
     
-    posts_list = BlogPost.objects.filter(
-        category=category, status='published'
-    ).select_related('author').order_by('-date_created')
+    posts_list = BlogPost.objects.filter(status='published', category__sub_category=sub_category).select_related('author')
+        
+    posts_list = posts_list.order_by('-date_created')
     
     # Pagination
     paginator = Paginator(posts_list, 10)
@@ -339,7 +391,7 @@ def category_posts(request, category_name):
     posts = paginator.get_page(page_number)
     
     context = {
-        'category': category,
+        'category': sub_category,
         'posts': posts,
     }
     return render(request, 'main/category_posts.html', context)
@@ -382,26 +434,45 @@ def toggle_post_like(request, post_pk):
 @login_required
 @user_passes_test(is_author, login_url='home')
 def create_post(request):
-    categories = Category.objects.all()
+    super_categories = SuperCategory.objects.prefetch_related('sub_categories__categories').all()
     if request.method == 'POST':
-        form = BlogPostForm(request.POST, request.FILES)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            if request.user.is_staff:
-                post.status = 'published'
-                messages.success(request, 'Post created and published successfully!')
-            else:
-                post.status = 'draft'
-                messages.success(request, 'Post submitted for review successfully!')
-            post.save()
-            return redirect('post_detail', pk=post.pk)
+        if 'create_category' in request.POST:
+            new_category_form = NewCategoryForm(request.POST)
+            if new_category_form.is_valid():
+                super_category = new_category_form.cleaned_data['super_category']
+                sub_category_name = new_category_form.cleaned_data['sub_category_name']
+                category_name = new_category_form.cleaned_data['category_name']
+                
+                sub_category, _ = SubCategory.objects.get_or_create(
+                    super_category=super_category,
+                    name=sub_category_name
+                )
+                category, _ = Category.objects.get_or_create(
+                    sub_category=sub_category,
+                    name=category_name
+                )
+                messages.success(request, 'New category created successfully!')
+                return redirect('create_post')
         else:
-            messages.error(request, 'Please correct the errors below.')
+            form = BlogPostForm(request.POST, request.FILES)
+            if form.is_valid():
+                post = form.save(commit=False)
+                post.author = request.user
+                if request.user.is_staff:
+                    post.status = 'published'
+                    messages.success(request, 'Post created and published successfully!')
+                else:
+                    post.status = 'draft'
+                    messages.success(request, 'Post submitted for review successfully!')
+                post.save()
+                return redirect('post_detail', pk=post.pk)
+            else:
+                messages.error(request, 'Please correct the errors below.')
     else:
         form = BlogPostForm(initial={'author': request.user})
     
-    return render(request, 'main/create_update_post.html', {'form': form, 'categories': categories})
+    new_category_form = NewCategoryForm()
+    return render(request, 'main/create_update_post.html', {'form': form, 'super_categories': super_categories, 'new_category_form': new_category_form})
 
 
 @login_required
@@ -416,7 +487,7 @@ def update_post(request, pk):
         messages.error(request, "You do not have permission to edit this post.")
         return redirect('post_detail', pk=post.pk)
 
-    categories = Category.objects.all()
+    super_categories = SuperCategory.objects.prefetch_related('sub_categories__categories').all()
     
     if request.method == 'POST':
         old_status = post.status # Get the old status before saving the form
@@ -440,7 +511,7 @@ def update_post(request, pk):
     else:
         form = BlogPostForm(instance=post)
     
-    return render(request, 'main/create_update_post.html', {'form': form, 'categories':categories})
+    return render(request, 'main/create_update_post.html', {'form': form, 'super_categories':super_categories})
 
 
 @login_required

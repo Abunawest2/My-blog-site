@@ -1,6 +1,10 @@
 # models.py
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.urls import reverse
+from django.utils.text import slugify
 
 
 class CustomUserManager(BaseUserManager):
@@ -75,6 +79,52 @@ class AuthorProfile(models.Model):
     def __str__(self):
         return f"{self.user.username}'s Author Profile"
 
+class SuperCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+class SubCategory(models.Model):
+    super_category = models.ForeignKey(SuperCategory, on_delete=models.CASCADE, related_name='sub_categories')
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, blank=True)
+
+    class Meta:
+        unique_together = ('super_category', 'name')
+        verbose_name_plural = 'Sub Categories'
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.super_category.name} > {self.name}"
+
+class Category(models.Model):
+    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='categories')
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, blank=True)
+
+    class Meta:
+        unique_together = ('sub_category', 'name')
+        verbose_name_plural = 'Categories'
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.sub_category} > {self.name}"
+
 class BlogPost(models.Model):
     author = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, verbose_name='author')
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True, related_name='posts')
@@ -96,6 +146,9 @@ class BlogPost(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def get_absolute_url(self):
+        return reverse('post_detail', kwargs={'pk': self.pk})
     
     def save(self, *args, **kwargs):
         """Override save to add custom behavior if needed"""
@@ -167,6 +220,9 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.author.username}: {self.text[:50]}"
+
+    def get_absolute_url(self):
+        return reverse('post_detail', kwargs={'pk': self.post.pk}) + f'#comment-{self.pk}'
     
     @property
     def likes_count(self):
@@ -194,35 +250,26 @@ class CommentLike(models.Model):
         return f"{self.user.username} likes comment by {self.comment.author.username}"
 
 
-
-class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
-    date_created = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        verbose_name = "Category"
-        verbose_name_plural = "Categories"
-        ordering = ['name']
-    
-    def __str__(self):
-        return self.name
-    
-    @property
-    def post_count(self):
-        """Return count of posts in this category"""
-        return self.posts.count()
-
 class AuthorApplication(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     ]
+    PRIMARY_GENRE_CHOICES = [
+        ('BUSINESS', 'Business'),
+        ('TECHNOLOGY', 'Technology'),
+    ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='author_applications', help_text="The user account if the applicant is already registered.")
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
+    primary_genre = models.CharField(
+        max_length=20,
+        choices=PRIMARY_GENRE_CHOICES,
+        help_text="Select your primary writing genre.",
+        default='BUSINESS'
+    )
     bio = models.TextField(help_text="Tell us about yourself and why you want to be an author.")
     sample_work_link = models.URLField(help_text="A link to a sample of your writing (e.g., a blog post, article, or portfolio).")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
@@ -237,3 +284,21 @@ class AuthorApplication(models.Model):
 
     def __str__(self):
         return f"Application from {self.name} ({self.email})"
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    actor = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='+')
+    verb = models.CharField(max_length=255)
+    target_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    target_object_id = models.PositiveIntegerField()
+    target = GenericForeignKey('target_content_type', 'target_object_id')
+    read = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"
+
+    def __str__(self):
+        return f'{self.actor} {self.verb} {self.target}'

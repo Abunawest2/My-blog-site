@@ -30,10 +30,19 @@
                     <label for="category"><i class="fas fa-folder me-1"></i>Category:</label>
                     <select name="category" id="category">
                         <option value="">All Categories</option>
-                        {% for category in categories %}
-                            <option value="{{ category.name }}" {% if category_filter == category.name %} selected{% endif %}>
-                            {{ category.name }}
-                            </option>
+                        {% for super_category in super_categories %}
+                            <optgroup label="{{ super_category.name }}">
+                                {% for sub_category in super_category.sub_categories.all %}
+                                    <option value="{{ sub_category.name }}" {% if category_filter == sub_category.name %} selected{% endif %}>
+                                        {{ sub_category.name }}
+                                    </option>
+                                    {% for category in sub_category.categories.all %}
+                                        <option value="{{ category.name }}" {% if category_filter == category.name %} selected{% endif %}>
+                                            &nbsp;&nbsp;&nbsp;{{ category.name }}
+                                        </option>
+                                    {% endfor %}
+                                {% endfor %}
+                            </optgroup>
                         {% endfor %}
                     </select>
                 </div>
@@ -172,4 +181,20 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#category').select2({
+            theme: "bootstrap-5",
+            placeholder: 'Search for a category',
+            allowClear: true
+        });
+
+        $(document).on('select2:open', () => {
+            document.querySelector('.select2-search__field').setAttribute('placeholder', 'Search for a category');
+        });
+    });
+</script>
 {% endblock %}

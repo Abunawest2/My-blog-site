@@ -1,0 +1,212 @@
+[
+{
+  "model": "firstblog.blogpost",
+  "pk": 1,
+  "fields": {
+    "author": 7,
+    "category": 2,
+    "title": "DJANGO IS FUN",
+    "add_image": "",
+    "post": "<h1><span style=\"box-sizing: border-box; margin: 0px; padding: 0px;\">DJANGO IS FUN</span></h1>\r\n<p><span style=\"box-sizing: border-box; margin: 0px; padding: 0px;\">Learn&nbsp;<strong>Django&nbsp;</strong>now because time is running out! It is straightforward.</span></p>\r\n<p><span style=\"box-sizing: border-box; margin: 0px; padding: 0px;\">Start with Python.</span></p>\r\n<p><strong><em><span style=\"box-sizing: border-box; margin: 0px; padding: 0px;\">PYTHON FUNCTION:<br></span></em></strong></p>\r\n<pre><code>def clean_post(self):</code><br><br><code>&nbsp; &nbsp; &nbsp; &nbsp; \"\"\"Clean and validate post content\"\"\"</code><br><br><code>&nbsp; &nbsp; &nbsp; &nbsp; post = self.cleaned_data.get('post')</code><br><br><code>&nbsp; &nbsp; &nbsp; &nbsp; if post:</code><br><br><code>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; # Remove HTML tags for character count validation</code><br><br><code>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; import re</code><br><br><code>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; text_content = re.sub('&lt;[^&lt;]+?&gt;', '', post)</code><br><br><code>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; text_content = '\\n\\n'.join([' '.join(p.split()) for p in text_content.split('\\n\\n')])</code><br><br><code>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</code><br><br><code>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if len(text_content) &lt; 50:</code><br><br><code>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; raise forms.ValidationError('Post content must be at least 50 characters long.')</code><br><br><code>  &nbsp; &nbsp; &nbsp; return post</code></pre>\r\n<p style=\"line-height: 2;\">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Doloribus consequuntur at nobis. Quam deserunt velit incidunt doloremque consectetur omnis numquam ipsam veniam saepe tempore reprehenderit laborum esse eaque, ducimus porro quo, laudantium reiciendis impedit, qui quod itaque natus odio delectus? Neque itaque excepturi ullam commodi! Quae quod corporis, est nihil harum iusto sit cupiditate, at reiciendis dolores repellendus eius alias natus officia amet accusantium itaque. Odit quas modi, atque dolore enim, commodi molestiae porro harum ab architecto molestias ratione! Necessitatibus, obcaecati! Quod voluptatibus quis consequatur blanditiis, vitae expedita dolores dolore iusto debitis! Expedita perferendis adipisci ab maxime? Possimus ab similique ducimus deleniti eaque tempora voluptates, animi placeat fugit at necessitatibus aliquam ad nihil ea sed deserunt nisi voluptas labore numquam blanditiis molestias quisquam illo quasi repudiandae! Vitae, fugit aliquam omnis ullam ratione tenetur saepe aspernatur nobis expedita reprehenderit eaque eos nulla nesciunt! Maiores dolor in eius velit eaque. Esse, quia!</p>\r\n<div><img src=\"blob:http://127.0.0.1:8000/72be9fd5-59b3-48e7-a56a-a60370a2017b\"></div>",
+    "status": "published",
+    "date_created": "2025-10-23T22:54:22.681Z",
+    "date_updated": "2025-11-04T11:58:48.905Z",
+    "view_count": 28
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 2,
+  "fields": {
+    "author": 7,
+    "category": 1,
+    "title": "Stock Market Update",
+    "add_image": "image/NotebookLM_Mind_Map_1.png",
+    "post": "<blockquote>\r\n<h1><strong><span style=\"font-family: tahoma, arial, helvetica, sans-serif; font-size: 14pt;\">HEADING ONE</span></strong></h1>\r\n</blockquote>\r\n<p>This post aims to provide the latest updates on the presence stocks report. This post aims to provide the latest updates on the presence stocks report. This post aims to provide the latest updates on the presence stocks report. This post aims to provide the latest updates on the presence stocks report. This post aims to provide the latest updates on the presence stocks report. This post aims to provide the latest updates on the presence stocks report. This post aims to provide the latest updates on the presence stocks report.</p>\r\n<p>This post aims to provide the latest updates on the presence stocks report. This post aims to provide the latest updates on the presence stocks report. This post aims to provide the latest updates on the presence stocks report. This post aims to provide the latest updates on the presence stocks report. This post aims to provide the latest updates on the presence stocks report.&nbsp;<a href=\"https://github.com/Abunawest2/\" target=\"_blank\" rel=\"noopener\">Go to GitHub</a></p>\r\n<p>&nbsp;</p>\r\n<table style=\"border-collapse: collapse; width: 100%; border-width: 1px; background-color: #ecf0f1; border-color: #000000;\" border=\"1\"><colgroup><col style=\"width: 50%;\"><col style=\"width: 50%;\"></colgroup>\r\n<thead>\r\n<tr style=\"background-color: #fbeeb8;\">\r\n<td style=\"border-color: #000000;\"><strong>NAMES</strong></td>\r\n<td style=\"border-color: #000000;\"><strong>AGE</strong></td>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td style=\"border-color: #000000;\">JAMES</td>\r\n<td style=\"border-color: #000000;\">23</td>\r\n</tr>\r\n<tr>\r\n<td style=\"border-color: #000000;\">YUSIF</td>\r\n<td style=\"border-color: #000000;\">18</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<p>&nbsp;</p>",
+    "status": "published",
+    "date_created": "2025-10-25T14:01:17.012Z",
+    "date_updated": "2025-11-04T14:14:11.577Z",
+    "view_count": 61
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 3,
+  "fields": {
+    "author": 2,
+    "category": 2,
+    "title": "BEST DEV",
+    "add_image": "image/django_python_dGvVeJI.png",
+    "post": "<p><span style=\"font-size: 14pt;\"><strong>THE TITLE</strong></span><br><br>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sequi eum sed magni omnis rem est vel delectus in cumque itaque aliquam, laudantium eaque enim illo iste quam optio deleniti. Nemo esse dicta quo aut facere velit, nulla culpa ipsum vitae placeat saepe fugit, doloremque magnam repellendus odit impedit iusto, error quia cum itaque iure rem consequatur illum! Modi expedita impedit aperiam, libero animi quibusdam consequatur quam nisi aut odit molestiae voluptate, at dolor culpa odio rem illum! Facere, reprehenderit. Veritatis autem dignissimos nisi eum! Rerum, expedita! Voluptatibus ea magni debitis veniam rerum repudiandae alias quo culpa dolores, voluptates explicabo incidunt.</p>",
+    "status": "draft",
+    "date_created": "2025-10-26T22:30:26.413Z",
+    "date_updated": "2025-10-31T19:38:40.404Z",
+    "view_count": 10
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 4,
+  "fields": {
+    "author": 9,
+    "category": 2,
+    "title": "Javascript for Machine Learning",
+    "add_image": "",
+    "post": "<p>Javascript can easily be used for machine learning!!</p>",
+    "status": "archived",
+    "date_created": "2025-10-30T13:19:01.538Z",
+    "date_updated": "2025-11-04T14:50:49.230Z",
+    "view_count": 15
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 5,
+  "fields": {
+    "author": 2,
+    "category": 6,
+    "title": "The Future of Artificial Intelligence in 2024",
+    "add_image": "",
+    "post": "Artificial intelligence continues to transform industries at an unprecedented pace. From machine learning algorithms to natural language processing, AI is revolutionizing how we work and live.\n\nIn this comprehensive overview, we explore the latest trends in AI development, including the rise of generative AI, ethical considerations, and practical applications across various sectors.\n\nKey points covered:\n- Current state of AI technology\n- Ethical implications and challenges\n- Future predictions and developments\n- How businesses can leverage AI effectively",
+    "status": "draft",
+    "date_created": "2025-11-01T20:21:47.383Z",
+    "date_updated": "2025-11-01T20:21:47.383Z",
+    "view_count": 1250
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 6,
+  "fields": {
+    "author": 2,
+    "category": 4,
+    "title": "Sustainable Living: Practical Tips for Everyday Life",
+    "add_image": "",
+    "post": "Adopting a sustainable lifestyle doesn't have to be complicated or expensive. In this guide, we share practical tips that anyone can implement to reduce their environmental footprint.\n\nFrom simple changes in daily habits to more significant lifestyle adjustments, discover how you can contribute to a healthier planet while often saving money in the process.\n\nTopics include:\n- Reducing plastic waste\n- Energy conservation at home\n- Sustainable food choices\n- Eco-friendly transportation options",
+    "status": "published",
+    "date_created": "2025-11-01T20:21:47.391Z",
+    "date_updated": "2025-11-04T14:14:11.571Z",
+    "view_count": 892
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 7,
+  "fields": {
+    "author": 2,
+    "category": 1,
+    "title": "Mastering Django: Best Practices for Web Development",
+    "add_image": "",
+    "post": "<p>Django remains one of the most popular Python web frameworks for good reason. Its \"batteries-included\" philosophy and robust security features make it ideal for building scalable web applications. This post covers essential Django best practices that every developer should know, from project structure and settings management to deployment considerations. We'll discuss: - Project organization patterns - Security best practices - Performance optimization - Deployment strategies - Testing methodologies</p>",
+    "status": "published",
+    "date_created": "2025-11-01T20:21:47.393Z",
+    "date_updated": "2025-11-10T23:08:42.687Z",
+    "view_count": 2104
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 8,
+  "fields": {
+    "author": 2,
+    "category": 6,
+    "title": "Healthy Eating on a Busy Schedule",
+    "add_image": "",
+    "post": "Maintaining a healthy diet can be challenging when you're constantly on the go. This guide provides time-saving strategies and meal prep ideas that make healthy eating achievable even with the busiest schedules.\n\nLearn how to:\n- Plan meals efficiently\n- Prepare healthy snacks\n- Make quick nutritious meals\n- Stay consistent with your goals",
+    "status": "archived",
+    "date_created": "2025-11-01T20:21:47.396Z",
+    "date_updated": "2025-11-04T15:29:33.357Z",
+    "view_count": 760
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 9,
+  "fields": {
+    "author": 4,
+    "category": 4,
+    "title": "Top Travel Destinations for Digital Nomads",
+    "add_image": "",
+    "post": "<p>The rise of remote work has created new opportunities for location-independent professionals. Discover the best cities and countries for digital nomads in 2024, considering factors like cost of living, internet connectivity, and community. Featured destinations include: - Bali, Indonesia - Lisbon, Portugal - Medell&iacute;n, Colombia - Chiang Mai, Thailand - Mexico City, Mexico</p>",
+    "status": "archived",
+    "date_created": "2025-11-01T20:21:47.398Z",
+    "date_updated": "2025-11-04T14:34:16.111Z",
+    "view_count": 1542
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 10,
+  "fields": {
+    "author": 2,
+    "category": 3,
+    "title": "Machine Learning Fundamentals for Beginners",
+    "add_image": "",
+    "post": "Machine learning can seem intimidating, but understanding the basics is more accessible than you might think. This beginner-friendly introduction breaks down core concepts without overwhelming technical jargon.\n\nWe cover:\n- What machine learning actually is\n- Different types of ML algorithms\n- Real-world applications\n- Getting started with your first project\n- Recommended learning resources",
+    "status": "published",
+    "date_created": "2025-11-01T20:21:47.400Z",
+    "date_updated": "2025-11-04T14:14:11.569Z",
+    "view_count": 981
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 11,
+  "fields": {
+    "author": 2,
+    "category": 4,
+    "title": "Urban Gardening: Growing Food in Small Spaces",
+    "add_image": "",
+    "post": "You don't need a large backyard to grow your own food. Urban gardening techniques allow you to cultivate fresh produce even in apartments and small homes.\n\nThis comprehensive guide covers:\n- Container gardening basics\n- Best plants for small spaces\n- Vertical gardening techniques\n- Indoor growing solutions\n- Pest management in confined spaces",
+    "status": "published",
+    "date_created": "2025-11-01T20:21:47.402Z",
+    "date_updated": "2025-11-04T14:14:11.574Z",
+    "view_count": 679
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 12,
+  "fields": {
+    "author": 4,
+    "category": 5,
+    "title": "Web Development Trends Shaping 2024",
+    "add_image": "",
+    "post": "<p>The web development landscape continues to evolve rapidly. Stay ahead of the curve by understanding the technologies and approaches that are gaining traction this year. Key trends include: - Serverless architecture adoption - Jamstack methodology - Web3 and blockchain integration - Progressive Web Apps (PWAs) - AI-powered development tools</p>",
+    "status": "published",
+    "date_created": "2025-11-01T20:21:47.403Z",
+    "date_updated": "2025-11-04T15:16:12.352Z",
+    "view_count": 1341
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 13,
+  "fields": {
+    "author": 2,
+    "category": 6,
+    "title": "Mindfulness and Mental Health in the Digital Age",
+    "add_image": "",
+    "post": "In our always-connected world, maintaining mental wellbeing requires intentional practice. Explore mindfulness techniques and digital wellness strategies that can help you find balance.\n\nTopics covered:\n- Digital detox strategies\n- Meditation for beginners\n- Managing information overload\n- Building healthy tech habits\n- Creating boundaries with devices",
+    "status": "published",
+    "date_created": "2025-11-01T20:21:47.405Z",
+    "date_updated": "2025-11-04T14:14:11.575Z",
+    "view_count": 542
+  }
+},
+{
+  "model": "firstblog.blogpost",
+  "pk": 14,
+  "fields": {
+    "author": 2,
+    "category": 6,
+    "title": "Renewable Energy Solutions for Homeowners",
+    "add_image": "",
+    "post": "Transitioning to renewable energy is becoming increasingly accessible for homeowners. This guide examines the practical options available today, from solar panels to geothermal systems.\n\nWe discuss:\n- Solar power installation considerations\n- Wind energy for residential use\n- Geothermal heating and cooling\n- Government incentives and rebates\n- Calculating return on investment",
+    "status": "draft",
+    "date_created": "2025-11-01T20:21:47.408Z",
+    "date_updated": "2025-11-01T20:21:47.408Z",
+    "view_count": 832
+  }
+}
+]

@@ -409,15 +409,6 @@
   background: var(--bg-light);
 }
 
-.comment-action-btn.liked {
-  color: var(--error-color);
-}
-
-.comment-action-btn.liked:hover {
-  color: var(--error-dark);
-  background: var(--error-light);
-}
-
 /* Reply Section */
 .reply-section {
   margin-left: 3rem;
